@@ -76,3 +76,12 @@ The platform includes five production starter kits built on a unified, shared fo
 3. **Local Table** — Restaurants, Cafés & Food Businesses (`#24211E` Charcoal, `#FBF5EA` Cream, `#B84E32` Terracotta, DM Serif Display + DM Sans)
 4. **Trusted Home Pro** — Home Services, Plumbing, HVAC, Contractors (`#17324D` Navy, `#236FA1` Service Blue, `#E8752E` Safety Orange, Manrope + Inter)
 5. **Modern Merchant** — E-commerce & Specialty Apparel (`#17191C` Ink, `#FFFFFF` White, `#F5F5F3` Soft Gray, Space Grotesk + Inter)
+
+---
+
+## 4. Delivery Workflow
+
+- After a meaningful product increment passes the relevant type-check and production build, create a focused Git commit and push it to the configured GitHub repository.
+- Never push a broken, partially validated, secret-containing, or knowingly misleading build.
+- Keep commits focused and use concise messages that describe the completed product increment.
+- Do not describe front-end previews as production-ready backend capabilities.

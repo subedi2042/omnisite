@@ -1,14 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Activity, ArrowLeft, ArrowRight, CalendarDays, Check, ChevronDown,
   HelpCircle, Clock3, FileText, Globe2, HandHeart, LayoutDashboard,
-  Menu, MessageSquareText, Monitor, MoreHorizontal, Paintbrush, PanelLeftClose,
-  Rocket, Search, Settings, ShoppingBag, Sparkles, Users, X
+  DollarSign, Menu, MessageSquareText, Monitor, MoreHorizontal, PackageCheck,
+  Paintbrush, PanelLeftClose, Plus, Rocket, Search, Settings, ShieldCheck,
+  ShoppingBag, Sparkles, Users, X
 } from 'lucide-react';
 import { getSiteDataForTheme } from '../data/themeDataFactory';
 import { SiteData } from '../types/platform';
 
-type WorkspaceView = 'home' | 'easy' | 'advanced' | 'project' | 'analytics' | 'settings';
+type WorkspaceView = 'home' | 'easy' | 'advanced' | 'project' | 'analytics' | 'settings' | 'sell' | 'appointments' | 'events' | 'giving' | 'people';
 type EasyTask = 'identity' | 'hours' | 'announcement' | 'contact';
 
 const primaryNavigation = [
@@ -20,11 +21,11 @@ const primaryNavigation = [
 ];
 
 const stagedModules = [
-  { label: 'Sell', icon: ShoppingBag, note: 'Stage 2' },
-  { label: 'Appointments', icon: Clock3, note: 'Stage 2' },
-  { label: 'Events', icon: CalendarDays, note: 'Stage 2' },
-  { label: 'Giving', icon: HandHeart, note: 'Stage 2' },
-  { label: 'People', icon: Users, note: 'Stage 3' },
+  { id: 'sell' as const, label: 'Sell', icon: ShoppingBag, note: 'Preview' },
+  { id: 'appointments' as const, label: 'Appointments', icon: Clock3, note: 'Preview' },
+  { id: 'events' as const, label: 'Events', icon: CalendarDays, note: 'Preview' },
+  { id: 'giving' as const, label: 'Giving', icon: HandHeart, note: 'Preview' },
+  { id: 'people' as const, label: 'People', icon: Users, note: 'Stage 3' },
 ];
 
 const quickTasks: Array<{ id: EasyTask; title: string; detail: string; icon: typeof Sparkles }> = [
@@ -68,7 +69,7 @@ export function PlatformWorkspace({ onBackToMarketing }: { onBackToMarketing: ()
           <p>Workspace</p>
           {primaryNavigation.map(item => <button key={item.id} className={view === item.id ? 'active' : ''} onClick={() => goTo(item.id)}><item.icon size={18} /><span>{item.label}</span>{item.id === 'project' && <i>2</i>}</button>)}
           <p>Coming in the launch family</p>
-          {stagedModules.map(item => <button key={item.label} className="staged" title={`${item.label} is planned for ${item.note}`}><item.icon size={18} /><span>{item.label}</span><small>{item.note}</small></button>)}
+          {stagedModules.map(item => <button key={item.label} className={view === item.id ? 'active staged' : 'staged'} onClick={() => goTo(item.id)}><item.icon size={18} /><span>{item.label}</span><small>{item.note}</small></button>)}
         </nav>
         <div className="platform-sidebar-bottom">
           <button className={view === 'settings' ? 'active' : ''} onClick={() => goTo('settings')}><Settings size={18} />Settings</button>
@@ -95,6 +96,11 @@ export function PlatformWorkspace({ onBackToMarketing }: { onBackToMarketing: ()
         {view === 'project' && <ProjectWorkspace />}
         {view === 'analytics' && <AnalyticsWorkspace />}
         {view === 'settings' && <SettingsWorkspace site={draftSite} setSite={setDraftSite} />}
+        {view === 'sell' && <SellWorkspace />}
+        {view === 'appointments' && <AppointmentsWorkspace />}
+        {view === 'events' && <EventsWorkspace />}
+        {view === 'giving' && <GivingWorkspace />}
+        {view === 'people' && <PeopleWorkspace />}
       </div>
       {sidebarOpen && <button className="platform-scrim" onClick={() => setSidebarOpen(false)} aria-label="Close navigation" />}
     </div>
@@ -151,3 +157,94 @@ function ProjectWorkspace() { return <main className="platform-page"><div classN
 function AnalyticsWorkspace() { return <main className="platform-page"><div className="platform-page-heading"><div><span>Analytics</span><h1>A clear view of your website.</h1><p>Privacy-conscious reporting focused on useful customer actions.</p></div><button className="heading-action">Last 30 days <ChevronDown size={15} /></button></div><div className="analytics-grid">{[['1,284', 'Site visits', '+18%'], ['42', 'Contact actions', '+9%'], ['3m 12s', 'Average visit', '+24s'], ['67%', 'Mobile visitors', 'Stable']].map(([value, label, change]) => <section className="platform-card" key={label}><span>{label}</span><strong>{value}</strong><small>{change}</small></section>)}</div><section className="platform-card analytics-chart"><div className="platform-card-heading"><div><span>Traffic</span><h2>Visits over time</h2></div></div><div className="chart-bars">{[38,54,46,72,63,80,68,92,70,86,78,98].map((height,index) => <i key={index} style={{ height: `${height}%` }} />)}</div><div className="chart-labels"><span>Jul 8</span><span>Jul 15</span><span>Jul 22</span><span>Aug 6</span></div></section></main>; }
 
 function SettingsWorkspace({ site, setSite }: { site: SiteData; setSite: (site: SiteData) => void }) { return <main className="platform-page"><div className="platform-page-heading"><div><span>Settings</span><h1>Organization and website.</h1><p>High-impact settings remain separate from everyday editing.</p></div></div><div className="settings-layout"><nav>{['Organization', 'Domain', 'Users and roles', 'Billing', 'Integrations', 'Privacy and data', 'Audit log'].map((item,index) => <button className={index === 0 ? 'active' : ''} key={item}>{item}<ArrowRight size={15} /></button>)}</nav><section className="platform-card settings-form"><span className="platform-kicker">Organization</span><h2>Organization profile</h2><p>Used across the admin area and customer-facing system messages.</p><FormField label="Organization name" value={site.orgName} onChange={value => setSite({ ...site, orgName: value })} /><FormField label="Custom domain" value={site.customDomain} onChange={value => setSite({ ...site, customDomain: value })} /><button className="heading-action">Save settings</button></section></div></main>; }
+
+function usePersistentState<T>(key: string, initialValue: T) {
+  const [value, setValue] = useState<T>(() => {
+    try { return JSON.parse(localStorage.getItem(key) || '') as T; } catch { return initialValue; }
+  });
+  useEffect(() => { localStorage.setItem(key, JSON.stringify(value)); }, [key, value]);
+  return [value, setValue] as const;
+}
+
+function ModuleHeader({ eyebrow, title, description, action, onAction }: { eyebrow: string; title: string; description: string; action: string; onAction: () => void }) {
+  return <div className="platform-page-heading module-heading"><div><span>{eyebrow}</span><h1>{title}</h1><p>{description}</p></div><button onClick={onAction}><Plus size={17} />{action}</button></div>;
+}
+
+function MetricCards({ items }: { items: Array<[string, string, string]> }) {
+  return <div className="module-metrics">{items.map(([label, value, note]) => <section className="platform-card" key={label}><span>{label}</span><strong>{value}</strong><small>{note}</small></section>)}</div>;
+}
+
+function SellWorkspace() {
+  const [showForm, setShowForm] = useState(false);
+  const [products, setProducts] = usePersistentState('omnisite-products', [
+    { id: 1, name: 'Community T-shirt', price: 24, stock: 38, status: 'Active' },
+    { id: 2, name: 'Welcome guide', price: 8, stock: 112, status: 'Active' },
+    { id: 3, name: 'Event registration', price: 15, stock: 24, status: 'Draft' },
+  ]);
+  const [name, setName] = useState(''); const [price, setPrice] = useState('');
+  const addProduct = () => { if (!name.trim() || !price) return; setProducts([...products, { id: Date.now(), name: name.trim(), price: Number(price), stock: 0, status: 'Draft' }]); setName(''); setPrice(''); setShowForm(false); };
+  return <main className="platform-page"><ModuleHeader eyebrow="Commerce preview" title="Products and orders." description="A focused small-store workspace with clear inventory and order states." action="Add product" onAction={() => setShowForm(!showForm)} />
+    <div className="module-notice"><ShieldCheck size={18} /><div><strong>Payment connection required before launch</strong><span>This preview does not collect card data. Production checkout will use a processor-hosted secure component.</span></div></div>
+    {showForm && <section className="platform-card module-create"><div><span className="platform-kicker">New product</span><h2>Add a catalog item</h2></div><label>Name<input value={name} onChange={e => setName(e.target.value)} placeholder="Product or service name" /></label><label>Price<input value={price} onChange={e => setPrice(e.target.value)} type="number" min="0" placeholder="0.00" /></label><button onClick={addProduct}>Save draft product</button></section>}
+    <MetricCards items={[["Gross sales", "$1,842", "+12% this month"],["Orders", "46", "5 need attention"],["Products", String(products.length), `${products.filter(p => p.status === 'Active').length} active`],["Inventory", "174", "2 low-stock items"]]} />
+    <section className="platform-card module-table-card"><div className="platform-card-heading"><div><span>Catalog</span><h2>Products</h2></div><button>Manage inventory</button></div><div className="module-table"><div className="module-table-head"><span>Product</span><span>Price</span><span>Inventory</span><span>Status</span><span /></div>{products.map(product => <div key={product.id}><span><PackageCheck size={18} /><strong>{product.name}</strong></span><span>${product.price.toFixed(2)}</span><span>{product.stock || 'Not tracked'}</span><span><i className={product.status.toLowerCase()} />{product.status}</span><button aria-label={`More options for ${product.name}`}><MoreHorizontal size={17} /></button></div>)}</div></section>
+  </main>;
+}
+
+function AppointmentsWorkspace() {
+  const [showForm, setShowForm] = useState(false);
+  const [bookings, setBookings] = usePersistentState('omnisite-bookings', [
+    { id: 1, person: 'Jordan Lee', service: 'Initial consultation', time: '9:30 AM', status: 'Confirmed' },
+    { id: 2, person: 'Avery Martin', service: 'Project review', time: '11:00 AM', status: 'Confirmed' },
+    { id: 3, person: 'Sam Wilson', service: 'Support session', time: '2:30 PM', status: 'Pending' },
+  ]);
+  const [person, setPerson] = useState(''); const [service, setService] = useState('Initial consultation');
+  const addBooking = () => { if (!person.trim()) return; setBookings([...bookings, { id: Date.now(), person: person.trim(), service, time: '4:00 PM', status: 'Pending' }]); setPerson(''); setShowForm(false); };
+  return <main className="platform-page"><ModuleHeader eyebrow="Scheduling preview" title="Appointments." description="Manage services, availability, and customer bookings without exposing private calendar details." action="Add booking" onAction={() => setShowForm(!showForm)} />
+    {showForm && <section className="platform-card module-create"><div><span className="platform-kicker">Manual booking</span><h2>Add an appointment</h2></div><label>Customer name<input value={person} onChange={e => setPerson(e.target.value)} placeholder="Full name" /></label><label>Service<select value={service} onChange={e => setService(e.target.value)}><option>Initial consultation</option><option>Project review</option><option>Support session</option></select></label><button onClick={addBooking}>Add pending booking</button></section>}
+    <MetricCards items={[["Today", String(bookings.length), "1 pending confirmation"],["This week", "18", "+4 from last week"],["Completion", "94%", "Last 30 days"],["Next opening", "Tomorrow", "10:30 AM"]]} />
+    <div className="module-split"><section className="platform-card"><div className="platform-card-heading"><div><span>Today</span><h2>Thursday, August 6</h2></div><button>Calendar view</button></div>{bookings.map(booking => <div className="booking-row" key={booking.id}><time>{booking.time}</time><i /><div><strong>{booking.person}</strong><span>{booking.service}</span></div><small className={booking.status.toLowerCase()}>{booking.status}</small></div>)}</section><section className="platform-card availability-card"><span className="platform-kicker">Availability</span><h2>Booking settings</h2><p>Times are shown in America/Los_Angeles. New bookings require a 24-hour notice.</p>{[['Initial consultation','45 min'],['Project review','60 min'],['Support session','30 min']].map(([title,time]) => <div key={title}><span><strong>{title}</strong><small>{time}</small></span><button>Edit</button></div>)}</section></div>
+  </main>;
+}
+
+function EventsWorkspace() {
+  const [showForm, setShowForm] = useState(false);
+  const [events, setEvents] = usePersistentState('omnisite-events', [
+    { id: 1, title: 'Community Welcome Lunch', date: 'Aug 16', location: 'Fellowship Hall', registrations: 46, capacity: 80 },
+    { id: 2, title: 'Volunteer Orientation', date: 'Aug 22', location: 'Room 204', registrations: 18, capacity: 24 },
+    { id: 3, title: 'Neighborhood Service Day', date: 'Sep 5', location: 'Riverside Park', registrations: 67, capacity: 100 },
+  ]);
+  const [title, setTitle] = useState(''); const addEvent = () => { if (!title.trim()) return; setEvents([...events, { id: Date.now(), title: title.trim(), date: 'Sep 12', location: 'To be confirmed', registrations: 0, capacity: 50 }]); setTitle(''); setShowForm(false); };
+  return <main className="platform-page"><ModuleHeader eyebrow="Events preview" title="Events and registrations." description="Publish events, manage capacity, and see registration progress in one place." action="Create event" onAction={() => setShowForm(!showForm)} />
+    {showForm && <section className="platform-card module-create"><div><span className="platform-kicker">New event</span><h2>Create a draft event</h2></div><label>Event name<input value={title} onChange={e => setTitle(e.target.value)} placeholder="Event name" /></label><label>Capacity<input type="number" defaultValue="50" /></label><button onClick={addEvent}>Create event draft</button></section>}
+    <MetricCards items={[["Upcoming events", String(events.length), "Next 45 days"],["Registrations", String(events.reduce((sum,event)=>sum+event.registrations,0)), "+28 this week"],["Available places", String(events.reduce((sum,event)=>sum+event.capacity-event.registrations,0)), "Across all events"],["Attendance", "87%", "Previous 5 events"]]} />
+    <section className="platform-card event-list"><div className="platform-card-heading"><div><span>Schedule</span><h2>Upcoming events</h2></div><button>Public calendar</button></div>{events.map(event => <article key={event.id}><time><strong>{event.date.split(' ')[1]}</strong><span>{event.date.split(' ')[0]}</span></time><div><h3>{event.title}</h3><p>{event.location}</p></div><div className="event-capacity"><span><i style={{ width: `${Math.min(100,event.registrations/event.capacity*100)}%` }} /></span><small>{event.registrations} of {event.capacity} registered</small></div><button><MoreHorizontal size={18} /></button></article>)}</section>
+  </main>;
+}
+
+function GivingWorkspace() {
+  const [funds] = usePersistentState('omnisite-funds', [
+    { name: 'General Fund', amount: 18420, goal: 25000 }, { name: 'Community Outreach', amount: 6840, goal: 10000 }, { name: 'Building Care', amount: 4210, goal: 8000 },
+  ]);
+  const [gifts, setGifts] = usePersistentState('omnisite-gifts', [
+    { id: 1, donor: 'Anonymous donor', fund: 'General Fund', amount: 150, date: 'Today, 9:14 AM' }, { id: 2, donor: 'Maya Thompson', fund: 'Community Outreach', amount: 75, date: 'Yesterday' }, { id: 3, donor: 'Marcus Lee', fund: 'General Fund', amount: 250, date: 'Aug 4' },
+  ]);
+  const addGift = () => setGifts([{ id: Date.now(), donor: 'Manual entry', fund: 'General Fund', amount: 100, date: 'Just now' }, ...gifts]);
+  return <main className="platform-page"><ModuleHeader eyebrow="Giving preview" title="Giving and funds." description="A finance-restricted view of gifts, designations, and campaign progress." action="Record offline gift" onAction={addGift} />
+    <div className="module-notice"><ShieldCheck size={18} /><div><strong>Finance administrator access</strong><span>Donor exports, contribution history, refunds, and statements require a finance-authorized role and immutable audit records.</span></div></div>
+    <MetricCards items={[["Received this month", "$29,470", "+8% from July"],["Gifts", String(gifts.length + 184), "61 recurring"],["Average gift", "$158", "Across all funds"],["Next payout", "$4,820", "Expected Aug 8"]]} />
+    <div className="module-split giving-split"><section className="platform-card"><div className="platform-card-heading"><div><span>Funds</span><h2>Campaign progress</h2></div><button>Manage funds</button></div>{funds.map(fund => <div className="fund-row" key={fund.name}><div><strong>{fund.name}</strong><span>${fund.amount.toLocaleString()} of ${fund.goal.toLocaleString()}</span></div><div><i style={{ width: `${fund.amount/fund.goal*100}%` }} /></div><small>{Math.round(fund.amount/fund.goal*100)}%</small></div>)}</section><section className="platform-card"><div className="platform-card-heading"><div><span>Recent activity</span><h2>Latest gifts</h2></div><button>View all</button></div>{gifts.slice(0,5).map(gift => <div className="gift-row" key={gift.id}><span><DollarSign size={16} /></span><div><strong>{gift.donor}</strong><small>{gift.fund} · {gift.date}</small></div><b>${gift.amount}</b></div>)}</section></div>
+  </main>;
+}
+
+function PeopleWorkspace() {
+  const [people, setPeople] = usePersistentState('omnisite-people', [
+    { id: 1, name: 'Maya Thompson', group: 'Community team', permission: 'Content editor' }, { id: 2, name: 'Marcus Lee', group: 'Leadership', permission: 'Site administrator' }, { id: 3, name: 'Sofia Martin', group: 'Outreach', permission: 'Group leader' },
+  ]);
+  const addPerson = () => setPeople([...people, { id: Date.now(), name: 'New person', group: 'Unassigned', permission: 'Member' }]);
+  return <main className="platform-page"><ModuleHeader eyebrow="Stage 3 foundation" title="People and groups." description="Privacy-first records with scoped roles, consent, and directory visibility." action="Add person" onAction={addPerson} />
+    <div className="module-notice"><ShieldCheck size={18} /><div><strong>Private by default</strong><span>People records and directories are never public automatically. Field visibility and exports require explicit permission.</span></div></div>
+    <MetricCards items={[["People", String(people.length + 241), "18 added this month"],["Households", "96", "12 need review"],["Groups", "14", "9 active this week"],["Volunteers", "68", "23 scheduled"]]} />
+    <section className="platform-card module-table-card"><div className="platform-card-heading"><div><span>Directory</span><h2>People records</h2></div><button>Manage fields</button></div><div className="module-table people-table"><div className="module-table-head"><span>Person</span><span>Group</span><span>Access</span><span>Status</span><span /></div>{people.map(person => <div key={person.id}><span><span className="person-avatar">{person.name.split(' ').map(part=>part[0]).join('').slice(0,2)}</span><strong>{person.name}</strong></span><span>{person.group}</span><span>{person.permission}</span><span><i className="active" />Active</span><button><MoreHorizontal size={17} /></button></div>)}</div></section>
+  </main>;
+}

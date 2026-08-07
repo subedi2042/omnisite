@@ -41,7 +41,7 @@ Status definitions:
 - [x] Industry content changes with template selection
 - [x] Desktop and phone previews
 - [x] Basic page creation and page-detail editing
-- [x] On-canvas text boxes, formatting controls, and basic shapes
+- [x] Full-template text boxes, drag positioning, formatting controls, and basic shapes
 - [x] Easy Edit routine-content workflows
 - [x] Staged operations-module interfaces
 - [x] TypeScript and production-build verification
@@ -108,7 +108,8 @@ Status definitions:
 - Individual page creation from 13 page types
 - One-click complete-site structure with the required essential pages
 - Editable page name, URL slug, heading, and introductory text
-- On-canvas text boxes with direct text editing
+- Full-template design layer with freely positioned text and shapes
+- On-canvas text boxes with direct text editing and drag placement
 - Text formatting controls for bold, italic, alignment, font size, color, width, and height
 - Basic rectangle, circle, and line shapes with editable dimensions and colors
 - Template content for organization identity, services, hours, announcements, staff, events, and contact information

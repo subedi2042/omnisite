@@ -117,6 +117,8 @@ export interface CanvasElement {
   pageId: string;
   kind: 'text' | 'rectangle' | 'circle' | 'line';
   text: string;
+  x: number;
+  y: number;
   width: number;
   height: number;
   color: string;

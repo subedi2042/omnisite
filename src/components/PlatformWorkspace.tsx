@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import {
   Activity,
   AlignCenter,
@@ -701,6 +701,19 @@ function SiteMiniPreview({
   const canvasElements = (site.canvasElements || []).filter(
     (element) => element.pageId === page?.id,
   );
+  const startDrag = (event: ReactPointerEvent<HTMLElement>, element: CanvasElement) => {
+    if (!onUpdateElement) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const originX = element.x || 0;
+    const originY = element.y || 0;
+    const move = (pointerEvent: PointerEvent) => onUpdateElement(element.id, { x: Math.max(0, originX + pointerEvent.clientX - startX), y: Math.max(0, originY + pointerEvent.clientY - startY) });
+    const stop = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", stop); };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", stop);
+  };
   return (
     <aside className={`site-mini-preview viewport-${viewport}`}>
       <div className="mini-preview-bar">
@@ -774,6 +787,8 @@ function SiteMiniPreview({
                     type="button"
                     className={`canvas-object canvas-${element.kind} ${selectedElementId === element.id ? "selected" : ""}`}
                     style={{
+                      left: `${element.x || 0}px`,
+                      top: `${element.y || 0}px`,
                       width: `${element.width}px`,
                       height: `${element.height}px`,
                       color:
@@ -792,6 +807,7 @@ function SiteMiniPreview({
                     }}
                     onClick={() => onSelectElement?.(element.id)}
                   >
+                    <i className="canvas-drag-handle" onPointerDown={(event) => startDrag(event, element)} aria-hidden="true" />
                     {element.kind === "text" ? (
                       <span
                         contentEditable
@@ -950,6 +966,8 @@ function WebsiteEditor({
       pageId: activePage.id,
       kind,
       text: kind === "text" ? "Edit this text" : "",
+      x: 80,
+      y: 135,
       width: kind === "line" ? 180 : kind === "text" ? 220 : 120,
       height: kind === "line" ? 2 : kind === "text" ? 52 : 90,
       color: kind === "text" ? site.theme.textColor : site.theme.accentColor,
@@ -1231,6 +1249,8 @@ function WebsiteEditor({
                   <button className={selectedElement.align === "right" ? "active" : ""} onClick={() => updateCanvasElement(selectedElement.id, { align: "right" })} aria-label="Align right"><AlignRight size={14} /></button>
                   <label>Size<input aria-label="Font size" type="number" min="10" max="72" value={selectedElement.fontSize} onChange={(event) => updateCanvasElement(selectedElement.id, { fontSize: Number(event.target.value) })} /></label>
                 </>}
+                <label>X<input aria-label="Element horizontal position" type="number" min="0" max="720" value={selectedElement.x || 0} onChange={(event) => updateCanvasElement(selectedElement.id, { x: Number(event.target.value) })} /></label>
+                <label>Y<input aria-label="Element vertical position" type="number" min="0" max="900" value={selectedElement.y || 0} onChange={(event) => updateCanvasElement(selectedElement.id, { y: Number(event.target.value) })} /></label>
                 <label>W<input aria-label="Element width" type="number" min="20" max="720" value={selectedElement.width} onChange={(event) => updateCanvasElement(selectedElement.id, { width: Number(event.target.value) })} /></label>
                 <label>H<input aria-label="Element height" type="number" min="2" max="500" value={selectedElement.height} onChange={(event) => updateCanvasElement(selectedElement.id, { height: Number(event.target.value) })} /></label>
                 <label className="canvas-color">Color<input aria-label="Element color" type="color" value={selectedElement.color} onChange={(event) => updateCanvasElement(selectedElement.id, { color: event.target.value })} /></label>

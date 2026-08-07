@@ -716,6 +716,19 @@ function SiteMiniPreview({
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", stop);
   };
+  const startResize = (event: ReactPointerEvent<HTMLElement>, element: CanvasElement) => {
+    if (!onUpdateElement) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const startWidth = element.width;
+    const startHeight = element.height;
+    const move = (pointerEvent: PointerEvent) => onUpdateElement(element.id, { width: Math.max(20, startWidth + pointerEvent.clientX - startX), height: Math.max(element.kind === "line" ? 2 : 20, startHeight + pointerEvent.clientY - startY) });
+    const stop = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", stop); };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", stop);
+  };
   return (
     <aside className={`site-mini-preview viewport-${viewport}`}>
       <div className="mini-preview-bar">
@@ -810,6 +823,7 @@ function SiteMiniPreview({
                     onClick={() => onSelectElement?.(element.id)}
                   >
                     <i className="canvas-drag-handle" onPointerDown={(event) => startDrag(event, element)} aria-hidden="true" />
+                    <i className="canvas-resize-handle" onPointerDown={(event) => startResize(event, element)} aria-hidden="true" />
                     {element.kind === "text" ? (
                       <span
                         contentEditable
@@ -1249,13 +1263,11 @@ function WebsiteEditor({
                   <button className={selectedElement.align === "left" ? "active" : ""} onClick={() => updateCanvasElement(selectedElement.id, { align: "left" })} aria-label="Align left"><AlignLeft size={14} /></button>
                   <button className={selectedElement.align === "center" ? "active" : ""} onClick={() => updateCanvasElement(selectedElement.id, { align: "center" })} aria-label="Align center"><AlignCenter size={14} /></button>
                   <button className={selectedElement.align === "right" ? "active" : ""} onClick={() => updateCanvasElement(selectedElement.id, { align: "right" })} aria-label="Align right"><AlignRight size={14} /></button>
-                  <label>Size<input aria-label="Font size" type="number" min="10" max="72" value={selectedElement.fontSize} onChange={(event) => updateCanvasElement(selectedElement.id, { fontSize: Number(event.target.value) })} /></label>
+                  <button onClick={() => updateCanvasElement(selectedElement.id, { fontSize: Math.max(10, selectedElement.fontSize - 2) })} aria-label="Decrease font size">A−</button>
+                  <button onClick={() => updateCanvasElement(selectedElement.id, { fontSize: Math.min(72, selectedElement.fontSize + 2) })} aria-label="Increase font size">A+</button>
                 </>}
-                <label>X<input aria-label="Element horizontal position" type="number" min="0" max="720" value={selectedElement.x || 0} onChange={(event) => updateCanvasElement(selectedElement.id, { x: Number(event.target.value) })} /></label>
-                <label>Y<input aria-label="Element vertical position" type="number" min="0" max="900" value={selectedElement.y || 0} onChange={(event) => updateCanvasElement(selectedElement.id, { y: Number(event.target.value) })} /></label>
-                <label>W<input aria-label="Element width" type="number" min="20" max="720" value={selectedElement.width} onChange={(event) => updateCanvasElement(selectedElement.id, { width: Number(event.target.value) })} /></label>
-                <label>H<input aria-label="Element height" type="number" min="2" max="500" value={selectedElement.height} onChange={(event) => updateCanvasElement(selectedElement.id, { height: Number(event.target.value) })} /></label>
                 <label className="canvas-color">Color<input aria-label="Element color" type="color" value={selectedElement.color} onChange={(event) => updateCanvasElement(selectedElement.id, { color: event.target.value })} /></label>
+                <small className="canvas-direct-hint">Drag blue to move · drag white corner to resize</small>
                 <button className="canvas-delete" onClick={removeCanvasElement} aria-label="Delete element"><Trash2 size={14} /></button>
               </div>
             ) : <p>Choose an element on the page to format it.</p>}

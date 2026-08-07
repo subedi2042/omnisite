@@ -578,7 +578,9 @@ input:focus, textarea:focus, select:focus {
 .canvas-object { position:absolute; z-index:1; pointer-events:auto; touch-action:none; }
 .canvas-object.selected { z-index:2; }
 .canvas-drag-handle { display:none; position:absolute; top:-9px; left:-9px; width:17px; height:17px; border:2px solid #fff; border-radius:50%; background:#2878b5; box-shadow:0 1px 5px rgba(0,0,0,.22); cursor:move; }
-.canvas-object.selected .canvas-drag-handle { display:block; }
+.canvas-resize-handle { display:none; position:absolute; right:-8px; bottom:-8px; width:15px; height:15px; border:2px solid #2878b5; border-radius:3px; background:#fff; box-shadow:0 1px 5px rgba(0,0,0,.18); cursor:nwse-resize; }
+.canvas-object.selected .canvas-drag-handle,.canvas-object.selected .canvas-resize-handle { display:block; }
+.canvas-direct-hint { margin:0 4px; color:var(--app-muted); font-size:8px; font-weight:650; white-space:nowrap; }
 .viewport-mobile .canvas-object-area { padding:0; }
 .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 .platform-scrim { display:none; }

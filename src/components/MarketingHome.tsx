@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ArrowRight, Check, Menu, X } from 'lucide-react';
+import { ThemePresetID } from '../types/platform';
 
 const plans = [
   { name: 'Start', price: 16, description: 'A professional home for a new organization.', features: ['1 published website', 'Custom domain', 'Forms and basic analytics', 'Email support'] },
@@ -8,9 +9,11 @@ const plans = [
 ];
 
 const templates = [
-  { name: 'Local Authority', type: 'Professional services', color: '#163A5F', image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1000&q=85' },
-  { name: 'Local Table', type: 'Restaurants', color: '#B84E32', image: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1000&q=85' },
-  { name: 'Faith Community', type: 'Churches', color: '#17243A', image: 'https://images.unsplash.com/photo-1507692049790-de58290a4334?auto=format&fit=crop&w=1000&q=85' },
+  { id: 'local_authority' as ThemePresetID, name: 'Local Authority', type: 'Professional services', color: '#163A5F', image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1000&q=85' },
+  { id: 'local_table' as ThemePresetID, name: 'Local Table', type: 'Restaurants', color: '#B84E32', image: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1000&q=85' },
+  { id: 'sanctuary_modern' as ThemePresetID, name: 'Faith Community', type: 'Churches', color: '#17243A', image: 'https://images.unsplash.com/photo-1507692049790-de58290a4334?auto=format&fit=crop&w=1000&q=85' },
+  { id: 'trusted_home_pro' as ThemePresetID, name: 'Trusted Home Pro', type: 'Home services', color: '#17324D', image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1000&q=85' },
+  { id: 'modern_merchant' as ThemePresetID, name: 'Modern Merchant', type: 'Online stores', color: '#17191C', image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1000&q=85' },
 ];
 
 const testimonials = [
@@ -26,7 +29,7 @@ const platformHighlights = [
   ['Real', 'Human help when needed'],
 ];
 
-export function MarketingHome({ onStartBuilding }: { onStartBuilding: () => void }) {
+export function MarketingHome({ onStartBuilding }: { onStartBuilding: (themeId?: ThemePresetID) => void }) {
   const [annual, setAnnual] = useState(true);
   const [activeTemplate, setActiveTemplate] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -41,7 +44,7 @@ export function MarketingHome({ onStartBuilding }: { onStartBuilding: () => void
         </nav>
         <div className="marketing-nav-actions">
           <button className="marketing-login" type="button">Log in</button>
-          <button className="marketing-primary small" onClick={onStartBuilding}>Start building</button>
+          <button className="marketing-primary small" onClick={() => onStartBuilding(templates[activeTemplate].id)}>Start building</button>
           <button className="marketing-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation">{menuOpen ? <X /> : <Menu />}</button>
         </div>
       </header>
@@ -52,7 +55,7 @@ export function MarketingHome({ onStartBuilding }: { onStartBuilding: () => void
           <h1>Your website.<br /><em>Made manageable.</em></h1>
           <p>Build a professional website yourself or let us handle it. OmniSite gives small businesses, churches, and nonprofits the tools—and the help—to stay current.</p>
           <div className="marketing-hero-actions">
-            <button className="marketing-primary" onClick={onStartBuilding}>Start building free</button>
+            <button className="marketing-primary" onClick={() => onStartBuilding(templates[activeTemplate].id)}>Start building free</button>
             <a className="marketing-secondary" href="#templates">View templates <ArrowRight size={18} /></a>
           </div>
           <span className="marketing-fine-print">No card required · Preview before you commit</span>
@@ -97,7 +100,7 @@ export function MarketingHome({ onStartBuilding }: { onStartBuilding: () => void
           </div>
           <div className="marketing-template-showcase">
             <img src={templates[activeTemplate].image} alt={`${templates[activeTemplate].name} template preview`} />
-            <div><span>{templates[activeTemplate].type}</span><h3>{templates[activeTemplate].name}</h3><p>Purposeful hierarchy, generous spacing, and flexible content collections—ready to adapt to your organization.</p><ul>{['Responsive on every screen', 'Easy Edit content controls', 'Accessible, SEO-ready structure'].map(item => <li key={item}><Check size={17} />{item}</li>)}</ul><button onClick={onStartBuilding}>Use this template <ArrowRight size={18} /></button></div>
+            <div><span>{templates[activeTemplate].type}</span><h3>{templates[activeTemplate].name}</h3><p>Purposeful hierarchy, generous spacing, and flexible content collections—ready to adapt to your organization.</p><ul>{['Responsive on every screen', 'Easy Edit content controls', 'Accessible, SEO-ready structure'].map(item => <li key={item}><Check size={17} />{item}</li>)}</ul><button onClick={() => onStartBuilding(templates[activeTemplate].id)}>Use this template <ArrowRight size={18} /></button></div>
           </div>
         </section>
 
@@ -112,7 +115,7 @@ export function MarketingHome({ onStartBuilding }: { onStartBuilding: () => void
           <div className="marketing-section-heading"><span>Simple packages</span><h2>Choose software, service, or both.</h2></div>
           <div className="marketing-billing"><span>Monthly</span><button onClick={() => setAnnual(!annual)} className={annual ? 'annual' : ''} aria-label="Toggle annual billing"><i /></button><span>Annual</span>{annual && <b>Save 20%</b>}</div>
           <div className="marketing-plan-grid">
-            {plans.map(plan => <article key={plan.name} className={plan.featured ? 'featured' : ''}>{plan.featured && <div className="marketing-popular">Most popular</div>}<h3>{plan.name}</h3><p>{plan.description}</p><div className="marketing-price"><strong>${price(plan.price)}</strong><span>/mo</span></div><ul>{plan.features.map(feature => <li key={feature}><Check size={17} />{feature}</li>)}</ul><button onClick={onStartBuilding}>{plan.name === 'Managed' ? 'Talk to us' : 'Start free'}</button></article>)}
+            {plans.map(plan => <article key={plan.name} className={plan.featured ? 'featured' : ''}>{plan.featured && <div className="marketing-popular">Most popular</div>}<h3>{plan.name}</h3><p>{plan.description}</p><div className="marketing-price"><strong>${price(plan.price)}</strong><span>/mo</span></div><ul>{plan.features.map(feature => <li key={feature}><Check size={17} />{feature}</li>)}</ul><button onClick={() => onStartBuilding(templates[activeTemplate].id)}>{plan.name === 'Managed' ? 'Talk to us' : 'Start free'}</button></article>)}
           </div>
           <p className="marketing-pricing-note">Final launch pricing will be confirmed before commercial release.</p>
         </section>
@@ -121,7 +124,7 @@ export function MarketingHome({ onStartBuilding }: { onStartBuilding: () => void
           <span>Prefer to have it handled?</span>
           <h2>Bring us your vision.<br />We’ll help make it real.</h2>
           <p>Start on your own, or work with a real person for setup, launch, and ongoing care.</p>
-          <button onClick={onStartBuilding}>Start your project <ArrowRight size={19} /></button>
+          <button onClick={() => onStartBuilding(templates[activeTemplate].id)}>Start your project <ArrowRight size={19} /></button>
         </section>
       </main>
 

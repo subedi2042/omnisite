@@ -126,15 +126,17 @@ const quickTasks: Array<{
 
 export function PlatformWorkspace({
   onBackToMarketing,
+  initialThemeId,
 }: {
   onBackToMarketing: () => void;
+  initialThemeId: ThemePresetID;
 }) {
   const [view, setView] = useState<WorkspaceView>("home");
   const [site, setSite] = useState<SiteData>(() =>
-    getSiteDataForTheme("sanctuary_modern"),
+    getSiteDataForTheme(initialThemeId),
   );
   const [draftSite, setDraftSite] = useState<SiteData>(() =>
-    getSiteDataForTheme("sanctuary_modern"),
+    getSiteDataForTheme(initialThemeId),
   );
   const [activeTask, setActiveTask] = useState<EasyTask>("identity");
   const [sidebarOpen, setSidebarOpen] = useState(false);

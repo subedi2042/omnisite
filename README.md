@@ -6,6 +6,83 @@ OmniSite is a website-building and operations platform for small businesses, chu
 
 This repository is a functional front-end MVP. The interface and local browser workflows are implemented, but the product does not yet include the backend infrastructure required for commercial production use.
 
+### Tracking dashboard
+
+Last updated: **August 6, 2026**
+
+Status definitions:
+
+- ✅ **Done** — implemented and verified in the repository
+- 🟡 **In progress** — usable front-end foundation exists, but production work remains
+- ⬜ **Not started** — required work has not been implemented
+
+| Workstream | Status | Current result | Next milestone |
+| --- | --- | --- | --- |
+| Marketing website | ✅ Done | Responsive product site and workspace entry | Connect real accounts and onboarding |
+| Starter templates | ✅ Done | Five industry-specific template foundations | Complete every page renderer per template |
+| Website page builder | 🟡 In progress | Add pages and edit basic page details | Section management and full content fields |
+| Easy Edit | 🟡 In progress | Protected editing for common content | Complete collection and media editors |
+| Responsive preview | 🟡 In progress | Desktop and 390px phone preview | Verify all six required breakpoints |
+| Publishing | 🟡 In progress | Browser-state review and publish flow | Real builds, hosting, releases, and rollback |
+| Commerce and giving | 🟡 In progress | Interactive front-end demonstrations | Payments, orders, receipts, and reporting |
+| Appointments and events | 🟡 In progress | Interactive front-end demonstrations | Calendar, registration, capacity, and messages |
+| People and groups | 🟡 In progress | Privacy-oriented interface demonstration | Secure records, consent, permissions, and exports |
+| Authentication and tenancy | ⬜ Not started | No production authentication or tenant database | Accounts, sessions, roles, and tenant isolation |
+| Domains and hosting | ⬜ Not started | Settings interface only | DNS verification, SSL, CDN, and deployment |
+| Automated testing and CI/CD | ⬜ Not started | Manual checks and build commands | Test suites and required pull-request checks |
+
+### Milestone checklist
+
+#### Milestone 1 — Front-end MVP
+
+- [x] Public marketing website
+- [x] Customer workspace and dashboard
+- [x] Five starter-template foundations
+- [x] Industry content changes with template selection
+- [x] Desktop and phone previews
+- [x] Basic page creation and page-detail editing
+- [x] Easy Edit routine-content workflows
+- [x] Staged operations-module interfaces
+- [x] TypeScript and production-build verification
+
+#### Milestone 2 — Complete website builder
+
+- [ ] Render every required page and section type
+- [ ] Add section reorder, duplicate, visibility, and deletion controls
+- [ ] Add navigation and footer editors
+- [ ] Add full collection editors
+- [ ] Add media library and image editing guidance
+- [ ] Complete SEO and social-sharing controls
+- [ ] Verify 1440, 1280, 1024, 768, 390, and 360px layouts
+- [ ] Complete WCAG 2.2 Level AA audit
+
+#### Milestone 3 — Production platform
+
+- [ ] Add authentication and secure sessions
+- [ ] Add multi-tenant database and organization isolation
+- [ ] Add server-side roles and permissions
+- [ ] Add durable drafts, revisions, audit logs, and rollback
+- [ ] Add secure forms, notifications, and spam protection
+- [ ] Add production monitoring, backups, and recovery
+
+#### Milestone 4 — Publishing and operations
+
+- [ ] Build real preview and production deployment pipelines
+- [ ] Add custom domains, DNS validation, and SSL
+- [ ] Connect payment processing for sales and giving
+- [ ] Connect calendars and appointment availability
+- [ ] Implement event registration and attendee communication
+- [ ] Implement secure people records and consent controls
+- [ ] Replace demonstration analytics with a privacy-aware event pipeline
+
+#### Milestone 5 — Commercial readiness
+
+- [ ] Add unit, integration, accessibility, and end-to-end tests
+- [ ] Add CI/CD and protected release checks
+- [ ] Add billing and subscription management
+- [ ] Add customer-support and managed-service administration
+- [ ] Complete privacy, terms, payment, retention, and accessibility reviews
+
 ### Completed and working
 
 #### Public product website

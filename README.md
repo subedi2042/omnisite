@@ -1,20 +1,136 @@
 # OmniSite
 
-OmniSite is a website and operations platform for small businesses, churches, and nonprofit organizations. It combines a guided, protected site editor with an optional done-for-you service workflow.
+OmniSite is a website-building and operations platform for small businesses, churches, and nonprofit organizations. It combines protected content editing, industry starter templates, responsive previews, publishing controls, and an optional managed-service workflow.
 
-## Current MVP
+## Project status
 
-- Public product and pricing website
-- Responsive starter-theme showcase
-- Customer dashboard with launch status and activity
-- Easy Edit task flows for routine content updates
-- Advanced website structure and theme workspace
-- Draft and published-state controls
-- Managed-service project review workspace
-- Privacy-conscious analytics concept
-- Organization and website settings
+This repository is a functional front-end MVP. The interface and local browser workflows are implemented, but the product does not yet include the backend infrastructure required for commercial production use.
 
-Commerce, appointments, events, giving, and people management are represented as staged product modules and are not presented as completed production capabilities.
+### Completed and working
+
+#### Public product website
+
+- Responsive marketing homepage
+- Product features, starter-template showcase, testimonials, pricing, and managed-service sections
+- Mobile navigation
+- Entry point into the OmniSite workspace
+
+#### Website builder
+
+- Five industry starter templates:
+  - Faith Community
+  - Local Authority
+  - Local Table
+  - Trusted Home Pro
+  - Modern Merchant
+- Full industry content changes when a template is selected; templates do not all default to church content
+- Editable primary, accent, background, and text colors
+- Desktop and 390px phone previews
+- Live page-specific preview
+- Individual page creation from 13 page types
+- One-click complete-site structure with the required essential pages
+- Editable page name, URL slug, heading, and introductory text
+- Template content for organization identity, services, hours, announcements, staff, events, and contact information
+
+#### Easy Edit
+
+- Protected organization-name and homepage-message editing
+- Service-time and business-hour editing
+- Announcement editing
+- Address, phone, and public-email editing
+- Draft-change detection
+- Layout and design remain protected from routine content editors
+
+#### Workspace and publishing experience
+
+- Customer dashboard with website status, launch progress, recent activity, and common tasks
+- Draft versus published-state controls in the current browser session
+- Review-and-publish interaction
+- Managed-service project milestones and review-thread interface
+- Organization and domain settings interface
+- Responsive workspace navigation
+
+#### Staged operations modules
+
+The following modules have interactive front-end workflows and local demo data:
+
+- Products and orders
+- Appointments
+- Events and registrations
+- Giving and funds
+- People and groups
+- Analytics dashboard
+
+These modules are previews only. They do not yet have secure production databases, payment processing, calendar integrations, or server-side permissions.
+
+#### Quality and accessibility foundation
+
+- TypeScript type checking
+- Production Vite build
+- Responsive layout behavior
+- Visible keyboard focus styles
+- Semantic headings and navigation landmarks
+- Reduced-motion support
+- Accessible labels on primary interactive controls
+
+## Partially complete
+
+- Page templates currently provide structured starter content and previews; every page type still needs its final production section renderer and dedicated content fields.
+- Publishing updates front-end state but does not deploy a customer website to hosting.
+- Analytics uses representative interface data rather than a real event pipeline.
+- Product, appointment, event, giving, and people records persist only where local demo storage is used.
+- Domain settings are an interface concept and do not perform DNS validation or provisioning.
+- Managed-service messaging is a UI workflow and is not connected to email, notifications, or a support backend.
+
+## Remaining work
+
+### Production platform foundation
+
+- User authentication, password recovery, and secure sessions
+- Multi-tenant database and organization isolation
+- Server-side authorization and role-based access control
+- Durable draft, revision, rollback, and audit-history storage
+- File and image upload pipeline with optimization and accessible metadata
+- Form submission storage, routing, spam protection, and notifications
+- Production error monitoring, logging, backups, and recovery procedures
+
+### Website rendering and CMS
+
+- Production renderer for every required page type and section
+- Reorder, duplicate, hide, and delete page and section controls
+- Navigation and footer menu editor
+- Collection editors for staff, events, testimonials, gallery items, posts, FAQs, services, and products
+- Media library and image crop/aspect-ratio guidance
+- SEO fields, social-sharing images, sitemap, robots controls, and structured data
+- Empty states, content-length constraints, and fallback content across all templates
+- Full responsive verification at 1440, 1280, 1024, 768, 390, and 360 pixels
+- WCAG 2.2 Level AA audit and remediation
+
+### Publishing and domains
+
+- Real site build and deployment pipeline
+- Preview URLs and production releases
+- Custom-domain connection, DNS verification, and SSL provisioning
+- Release history, rollback, and deployment-status monitoring
+- CDN caching and performance monitoring
+
+### Operations modules
+
+- Payment-processor integration for commerce and giving
+- Secure checkout, receipts, refunds, taxes, and financial reporting
+- Calendar availability and appointment integrations
+- Event registration, capacity, ticketing, and attendee communications
+- Privacy-aware people records, consent, exports, and data-retention controls
+- Real analytics collection with consent and privacy controls
+
+### Product operations
+
+- Automated unit, integration, accessibility, and end-to-end tests
+- CI/CD checks for pull requests and deployments
+- Billing and subscription management
+- Transactional email and notification system
+- Customer support and managed-service administration tools
+- Legal review for privacy, terms, payments, data retention, and accessibility claims
 
 ## Technology
 
@@ -55,15 +171,6 @@ src/
   index.css
 ```
 
-## Product direction
+## Deployment note
 
-The MVP follows the OmniSite product blueprint: safe structured content, separate Easy Edit and Advanced Edit modes, human service collaboration, version-aware publishing, customer ownership, accessible defaults, and staged transactional modules.
-
-## Deployment
-
-The project builds to the `dist/` directory and can be deployed to any static host that supports Vite applications, including GitHub Pages, Cloudflare Pages, Netlify, and Vercel.
-
-## Status
-
-This repository is an interactive front-end MVP. Authentication, durable multi-tenant storage, payment processing, domains, transactional workflows, server-side authorization, and production publishing infrastructure must be implemented before commercial use.
-
+The front-end builds to `dist/` and can be hosted as a static Vite application. That static deployment is only the OmniSite MVP interface; it does not provide authentication, databases, payments, domain provisioning, or production customer-site publishing.

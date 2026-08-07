@@ -112,6 +112,19 @@ export interface Page {
   sections: PageSection[];
 }
 
+export interface NavigationItem {
+  id: string;
+  pageId: string;
+  label: string;
+  visible: boolean;
+}
+
+export interface FooterSettings {
+  description: string;
+  ctaLabel: string;
+  showContact: boolean;
+}
+
 export interface CanvasElement {
   id: string;
   pageId: string;
@@ -153,6 +166,8 @@ export interface SiteData {
   
   // Pages
   pages: Page[];
+  navigation?: NavigationItem[];
+  footer?: FooterSettings;
   canvasElements?: CanvasElement[];
 }
 

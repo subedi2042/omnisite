@@ -50,7 +50,7 @@ Status definitions:
 
 - [ ] Render every required page and section type
 - [x] Add section reorder, duplicate, visibility, and deletion controls
-- [ ] Add navigation and footer editors
+- [x] Add navigation and footer editors
 - [ ] Add full collection editors
 - [ ] Add media library and image editing guidance
 - [ ] Complete SEO and social-sharing controls
@@ -110,6 +110,8 @@ Status definitions:
 - Editable page name, URL slug, heading, and introductory text
 - Plain-language page-section picker with immediate live preview
 - Protected page header plus reorder, hide/show, duplicate, and delete controls for content sections
+- Guided header-menu editor with link renaming, reordering, visibility controls, and protected Home access
+- Editable footer description, call-to-action text, and contact-information visibility
 - Full-template design layer with freely positioned text and shapes
 - On-canvas text boxes with direct text editing and graphical drag placement
 - Direct corner-resize handles for text and shapes without entering position or size numbers

@@ -50,6 +50,8 @@ import { getSiteDataForTheme } from "../data/themeDataFactory";
 import { THEME_MANIFESTS } from "../data/themesManifest";
 import {
   CanvasElement,
+  FooterSettings,
+  NavigationItem,
   Page,
   PageSection,
   SiteData,
@@ -70,6 +72,31 @@ type WorkspaceView =
   | "giving"
   | "people";
 type EasyTask = "identity" | "hours" | "announcement" | "contact";
+
+const getNavigationItems = (site: SiteData): NavigationItem[] => {
+  const savedItems = (site.navigation || []).filter((item) =>
+    site.pages.some((page) => page.id === item.pageId),
+  );
+  const savedPageIds = new Set(savedItems.map((item) => item.pageId));
+  return [
+    ...savedItems,
+    ...site.pages
+      .filter((page) => !savedPageIds.has(page.id))
+      .map((page) => ({
+        id: `nav-${page.id}`,
+        pageId: page.id,
+        label: page.title,
+        visible: true,
+      })),
+  ];
+};
+
+const getFooterSettings = (site: SiteData): FooterSettings =>
+  site.footer || {
+    description: site.tagline,
+    ctaLabel: "Get started",
+    showContact: true,
+  };
 
 const primaryNavigation = [
   { id: "home" as const, label: "Home", icon: LayoutDashboard },
@@ -711,6 +738,8 @@ function SiteMiniPreview({
   const visibleSections = (page?.sections || []).filter(
     (section) => section.type !== "hero" && section.visible,
   );
+  const navigationItems = getNavigationItems(site).filter((item) => item.visible);
+  const footer = getFooterSettings(site);
   const previewSectionLabel: Record<PageSection["type"], string> = {
     hero: "Welcome",
     hours_times: "Hours & times",
@@ -784,11 +813,12 @@ function SiteMiniPreview({
           <header>
             <b>{site.orgName}</b>
             <nav>
-              {site.pages.slice(0, 4).map((item) => (
-                <span key={item.id}>{item.title}</span>
+              {navigationItems.slice(0, 5).map((item) => (
+                <span key={item.id}>{item.label}</span>
               ))}
             </nav>
-            <button>Get started</button>
+            <span className="mini-mobile-menu">Menu · {navigationItems.length}</span>
+            <button>{footer.ctaLabel}</button>
           </header>
           <main>
             <span>{page?.title || "Home"}</span>
@@ -870,6 +900,19 @@ function SiteMiniPreview({
               </div>
             )}
           </main>
+          <footer>
+            <div>
+              <strong>{site.orgName}</strong>
+              <p>{footer.description}</p>
+            </div>
+            {footer.showContact && (
+              <div className="mini-footer-contact">
+                <span>{site.phone}</span>
+                <span>{site.email}</span>
+              </div>
+            )}
+            <button className="mini-footer-cta">{footer.ctaLabel}</button>
+          </footer>
         </div>
       </div>
     </aside>
@@ -883,7 +926,7 @@ function WebsiteEditor({
   site: SiteData;
   setSite: (site: SiteData) => void;
 }) {
-  const [panel, setPanel] = useState<"pages" | "design">("pages");
+  const [panel, setPanel] = useState<"pages" | "design" | "menus">("pages");
   const [viewport, setViewport] = useState<ViewportMode>("desktop");
   const [activePageId, setActivePageId] = useState(site.pages[0]?.id || "");
   const [addingPage, setAddingPage] = useState(false);
@@ -896,6 +939,8 @@ function WebsiteEditor({
   const selectedElement = (site.canvasElements || []).find(
     (element) => element.id === selectedElementId,
   );
+  const navigationItems = getNavigationItems(site);
+  const footerSettings = getFooterSettings(site);
 
   useEffect(() => {
     setActivePageId(site.pages[0]?.id || "");
@@ -1070,6 +1115,28 @@ function WebsiteEditor({
     updatePage({ sections: activePage.sections.filter((section) => section.id !== sectionId) });
   };
 
+  const saveNavigation = (navigation: NavigationItem[]) =>
+    setSite({ ...site, navigation });
+
+  const updateNavigationItem = (id: string, changes: Partial<NavigationItem>) =>
+    saveNavigation(
+      navigationItems.map((item) =>
+        item.id === id ? { ...item, ...changes } : item,
+      ),
+    );
+
+  const moveNavigationItem = (id: string, direction: -1 | 1) => {
+    const currentIndex = navigationItems.findIndex((item) => item.id === id);
+    const nextIndex = currentIndex + direction;
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= navigationItems.length) return;
+    const nextItems = [...navigationItems];
+    [nextItems[currentIndex], nextItems[nextIndex]] = [nextItems[nextIndex], nextItems[currentIndex]];
+    saveNavigation(nextItems);
+  };
+
+  const updateFooter = (changes: Partial<FooterSettings>) =>
+    setSite({ ...site, footer: { ...footerSettings, ...changes } });
+
   const addCanvasElement = (kind: CanvasElement["kind"]) => {
     if (!activePage) return;
     const element: CanvasElement = {
@@ -1145,6 +1212,13 @@ function WebsiteEditor({
             >
               <Paintbrush size={16} />
               Design
+            </button>
+            <button
+              className={panel === "menus" ? "active" : ""}
+              onClick={() => setPanel("menus")}
+            >
+              <Menu size={16} />
+              Menus
             </button>
           </div>
           {panel === "pages" ? (
@@ -1287,7 +1361,7 @@ function WebsiteEditor({
                 </div>
               )}
             </>
-          ) : (
+          ) : panel === "design" ? (
             <>
               <div className="template-list">
                 <span>Full website templates</span>
@@ -1356,6 +1430,53 @@ function WebsiteEditor({
                 ))}
               </div>
             </>
+          ) : (
+            <div className="menu-editor">
+              <div className="menu-editor-heading">
+                <span>Header menu</span>
+                <p>Choose the links visitors see at the top of your website.</p>
+              </div>
+              <div className="navigation-list">
+                {navigationItems.map((item, index) => {
+                  const page = site.pages.find((candidate) => candidate.id === item.pageId);
+                  const isHome = page?.slug === "/";
+                  return (
+                    <div className={item.visible ? "navigation-row" : "navigation-row is-hidden"} key={item.id}>
+                      <label>
+                        Link name
+                        <input value={item.label} onChange={(event) => updateNavigationItem(item.id, { label: event.target.value })} />
+                      </label>
+                      <small>Opens {page?.title || "page"}</small>
+                      <div>
+                        <button onClick={() => moveNavigationItem(item.id, -1)} disabled={index === 0} aria-label={`Move ${item.label} up`}><ChevronUp size={14} /></button>
+                        <button onClick={() => moveNavigationItem(item.id, 1)} disabled={index === navigationItems.length - 1} aria-label={`Move ${item.label} down`}><ChevronDown size={14} /></button>
+                        <button onClick={() => updateNavigationItem(item.id, { visible: !item.visible })} disabled={isHome} aria-label={`${item.visible ? "Hide" : "Show"} ${item.label}`}>{item.visible ? <Eye size={14} /> : <EyeOff size={14} />}</button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="menu-safety-note"><ShieldCheck size={14} /> Home stays in the menu so visitors can always get back.</p>
+              <div className="footer-editor">
+                <div className="menu-editor-heading">
+                  <span>Footer</span>
+                  <p>Update the information shown at the bottom of every page.</p>
+                </div>
+                <label>
+                  Short description
+                  <textarea value={footerSettings.description} onChange={(event) => updateFooter({ description: event.target.value })} maxLength={140} />
+                  <small>{footerSettings.description.length}/140 characters</small>
+                </label>
+                <label>
+                  Main button text
+                  <input value={footerSettings.ctaLabel} onChange={(event) => updateFooter({ ctaLabel: event.target.value })} maxLength={24} />
+                </label>
+                <label className="contact-toggle">
+                  <input type="checkbox" checked={footerSettings.showContact} onChange={(event) => updateFooter({ showContact: event.target.checked })} />
+                  <span><strong>Show contact information</strong><small>Uses the phone and email from Easy Edit.</small></span>
+                </label>
+              </div>
+            </div>
           )}
         </aside>
         <div className="advanced-canvas">

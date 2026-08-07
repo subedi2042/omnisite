@@ -111,6 +111,8 @@ Status definitions:
 - Full-template design layer with freely positioned text and shapes
 - On-canvas text boxes with direct text editing and graphical drag placement
 - Direct corner-resize handles for text and shapes without entering position or size numbers
+- Plain-language, labeled add controls and larger visual handles designed for nontechnical users
+- Shapes can be dragged directly from their surface; selected items show clear move and resize guidance
 - Compact text formatting controls for bold, italic, alignment, visual font-size adjustment, and color
 - Basic rectangle, circle, and line shapes with graphical sizing and editable colors
 - Template content for organization identity, services, hours, announcements, staff, events, and contact information

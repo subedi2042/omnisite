@@ -23,6 +23,7 @@ import {
   MessageSquareText,
   Minus,
   Monitor,
+  Move,
   MoreHorizontal,
   PackageCheck,
   Paintbrush,
@@ -821,8 +822,12 @@ function SiteMiniPreview({
                       textAlign: element.align,
                     }}
                     onClick={() => onSelectElement?.(element.id)}
+                    onPointerDown={(event) => {
+                      onSelectElement?.(element.id);
+                      if (element.kind !== "text") startDrag(event, element);
+                    }}
                   >
-                    <i className="canvas-drag-handle" onPointerDown={(event) => startDrag(event, element)} aria-hidden="true" />
+                    <i className="canvas-drag-handle" onPointerDown={(event) => startDrag(event, element)} aria-label="Drag to move"><Move size={12} /></i>
                     <i className="canvas-resize-handle" onPointerDown={(event) => startResize(event, element)} aria-hidden="true" />
                     {element.kind === "text" ? (
                       <span
@@ -1250,13 +1255,13 @@ function WebsiteEditor({
             <div className="canvas-add-group">
               <span>Add</span>
               <button onClick={() => addCanvasElement("text")}><Type size={15} />Text</button>
-              <button onClick={() => addCanvasElement("rectangle")} aria-label="Add rectangle"><Square size={15} /></button>
-              <button onClick={() => addCanvasElement("circle")} aria-label="Add circle"><Circle size={15} /></button>
-              <button onClick={() => addCanvasElement("line")} aria-label="Add line"><Minus size={15} /></button>
+              <button onClick={() => addCanvasElement("rectangle")}><Square size={15} />Box</button>
+              <button onClick={() => addCanvasElement("circle")}><Circle size={15} />Circle</button>
+              <button onClick={() => addCanvasElement("line")}><Minus size={15} />Line</button>
             </div>
             {selectedElement ? (
               <div className="canvas-format-group">
-                <span>{selectedElement.kind === "text" ? "Text formatting" : "Shape formatting"}</span>
+                <span>{selectedElement.kind === "text" ? "Editing text" : `Editing ${selectedElement.kind}`}</span>
                 {selectedElement.kind === "text" && <>
                   <button className={selectedElement.bold ? "active" : ""} onClick={() => updateCanvasElement(selectedElement.id, { bold: !selectedElement.bold })} aria-label="Bold"><Bold size={14} /></button>
                   <button className={selectedElement.italic ? "active" : ""} onClick={() => updateCanvasElement(selectedElement.id, { italic: !selectedElement.italic })} aria-label="Italic"><Italic size={14} /></button>
@@ -1267,10 +1272,10 @@ function WebsiteEditor({
                   <button onClick={() => updateCanvasElement(selectedElement.id, { fontSize: Math.min(72, selectedElement.fontSize + 2) })} aria-label="Increase font size">A+</button>
                 </>}
                 <label className="canvas-color">Color<input aria-label="Element color" type="color" value={selectedElement.color} onChange={(event) => updateCanvasElement(selectedElement.id, { color: event.target.value })} /></label>
-                <small className="canvas-direct-hint">Drag blue to move · drag white corner to resize</small>
+                <small className="canvas-direct-hint"><Move size={12} /> Move it anywhere <b>·</b> Pull the corner to resize</small>
                 <button className="canvas-delete" onClick={removeCanvasElement} aria-label="Delete element"><Trash2 size={14} /></button>
               </div>
-            ) : <p>Choose an element on the page to format it.</p>}
+            ) : <p>Click any text or shape on the page to change it.</p>}
           </div>
           <SiteMiniPreview site={site} viewport={viewport} page={activePage} selectedElementId={selectedElementId || undefined} onSelectElement={setSelectedElementId} onUpdateElement={updateCanvasElement} />
         </div>

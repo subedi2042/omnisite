@@ -10,6 +10,10 @@ import {
   CalendarDays,
   Check,
   ChevronDown,
+  ChevronUp,
+  Copy,
+  Eye,
+  EyeOff,
   HelpCircle,
   Clock3,
   FileText,
@@ -704,6 +708,21 @@ function SiteMiniPreview({
   const canvasElements = (site.canvasElements || []).filter(
     (element) => element.pageId === page?.id,
   );
+  const visibleSections = (page?.sections || []).filter(
+    (section) => section.type !== "hero" && section.visible,
+  );
+  const previewSectionLabel: Record<PageSection["type"], string> = {
+    hero: "Welcome",
+    hours_times: "Hours & times",
+    announcements: "Latest update",
+    services_products: "What we offer",
+    events: "Upcoming events",
+    sermons: "Resources",
+    staff: "Meet the team",
+    give_donate: "Support our work",
+    booking: "Book with us",
+    contact_form: "Get in touch",
+  };
   const startDrag = (event: ReactPointerEvent<HTMLElement>, element: CanvasElement) => {
     if (!onUpdateElement) return;
     event.preventDefault();
@@ -776,14 +795,16 @@ function SiteMiniPreview({
             <h2>{title}</h2>
             <p>{subtitle}</p>
             <button>Get started</button>
-            {page?.sections.some(
-              (section) => section.type === "hours_times",
-            ) && (
-              <section>
-                <small>THIS WEEK</small>
-                <h3>{site.hours[0]?.label}</h3>
-                <p>{site.hours[0]?.days}</p>
-              </section>
+            {visibleSections.length > 0 && (
+              <div className="mini-section-stack">
+                {visibleSections.map((section) => (
+                  <section key={section.id}>
+                    <small>{previewSectionLabel[section.type]}</small>
+                    <h3>{section.type === "hours_times" ? site.hours[0]?.label || section.title : section.title}</h3>
+                    <p>{section.type === "hours_times" ? site.hours[0]?.days || section.subtitle : section.subtitle || "Add your content here when you are ready."}</p>
+                  </section>
+                ))}
+              </div>
             )}
             {page?.title !== "Home" && (
               <div className="mini-content-blocks">
@@ -866,6 +887,7 @@ function WebsiteEditor({
   const [viewport, setViewport] = useState<ViewportMode>("desktop");
   const [activePageId, setActivePageId] = useState(site.pages[0]?.id || "");
   const [addingPage, setAddingPage] = useState(false);
+  const [addingSection, setAddingSection] = useState(false);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(
     null,
   );
@@ -893,6 +915,21 @@ function WebsiteEditor({
     "Privacy Policy",
     "Terms",
     "404",
+  ];
+  const sectionOptions: Array<{
+    type: PageSection["type"];
+    label: string;
+    description: string;
+  }> = [
+    { type: "announcements", label: "Announcement", description: "Highlight an important update" },
+    { type: "services_products", label: "Services or products", description: "Show what you offer" },
+    { type: "hours_times", label: "Hours or times", description: "Share when you are available" },
+    { type: "events", label: "Events", description: "Promote upcoming dates" },
+    { type: "staff", label: "Team or leadership", description: "Introduce your people" },
+    { type: "sermons", label: "Messages or resources", description: "Share videos, audio, or articles" },
+    { type: "give_donate", label: "Donate or give", description: "Add a giving invitation" },
+    { type: "booking", label: "Book an appointment", description: "Invite visitors to schedule" },
+    { type: "contact_form", label: "Contact form", description: "Let visitors reach you" },
   ];
   const makePage = (title: string): Page => {
     const slug =
@@ -978,6 +1015,59 @@ function WebsiteEditor({
         section.type === "hero" ? { ...section, [field]: value } : section,
       ),
     });
+  };
+
+  const addSection = (option: (typeof sectionOptions)[number]) => {
+    if (!activePage) return;
+    updatePage({
+      sections: [
+        ...activePage.sections,
+        {
+          id: `section-${Date.now()}`,
+          type: option.type,
+          title: option.label,
+          subtitle: option.description,
+          visible: true,
+        },
+      ],
+    });
+    setAddingSection(false);
+  };
+
+  const moveSection = (sectionId: string, direction: -1 | 1) => {
+    if (!activePage) return;
+    const currentIndex = activePage.sections.findIndex((section) => section.id === sectionId);
+    const nextIndex = currentIndex + direction;
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= activePage.sections.length) return;
+    if (activePage.sections[currentIndex].type === "hero" || (nextIndex === 0 && activePage.sections[0]?.type === "hero")) return;
+    const sections = [...activePage.sections];
+    [sections[currentIndex], sections[nextIndex]] = [sections[nextIndex], sections[currentIndex]];
+    updatePage({ sections });
+  };
+
+  const updateSection = (sectionId: string, changes: Partial<PageSection>) => {
+    if (!activePage) return;
+    updatePage({
+      sections: activePage.sections.map((section) =>
+        section.id === sectionId ? { ...section, ...changes } : section,
+      ),
+    });
+  };
+
+  const duplicateSection = (sectionId: string) => {
+    if (!activePage) return;
+    const currentIndex = activePage.sections.findIndex((section) => section.id === sectionId);
+    if (currentIndex < 0) return;
+    const source = activePage.sections[currentIndex];
+    const copy = { ...source, id: `section-${Date.now()}`, title: `${source.title} copy` };
+    const sections = [...activePage.sections];
+    sections.splice(currentIndex + 1, 0, copy);
+    updatePage({ sections });
+  };
+
+  const removeSection = (sectionId: string) => {
+    if (!activePage) return;
+    updatePage({ sections: activePage.sections.filter((section) => section.id !== sectionId) });
   };
 
   const addCanvasElement = (kind: CanvasElement["kind"]) => {
@@ -1151,6 +1241,49 @@ function WebsiteEditor({
                       }
                     />
                   </label>
+                  <div className="section-manager">
+                    <div className="section-manager-heading">
+                      <span>Page sections</span>
+                      <small>Arrange what visitors see</small>
+                    </div>
+                    <div className="section-list">
+                      {activePage.sections.map((section, index) => {
+                        const isHeader = section.type === "hero";
+                        const friendlyName = isHeader
+                          ? "Page header"
+                          : sectionOptions.find((option) => option.type === section.type)?.label || section.title;
+                        return (
+                          <div className={section.visible ? "section-row" : "section-row is-hidden"} key={section.id}>
+                            <div>
+                              <strong>{friendlyName}</strong>
+                              <small>{isHeader ? "Required at the top of this page" : section.visible ? "Shown on the page" : "Hidden from visitors"}</small>
+                            </div>
+                            <div className="section-actions">
+                              <button onClick={() => moveSection(section.id, -1)} disabled={index === 0 || index === 1 && activePage.sections[0]?.type === "hero" || isHeader} aria-label={`Move ${friendlyName} up`}><ChevronUp size={14} /></button>
+                              <button onClick={() => moveSection(section.id, 1)} disabled={index === activePage.sections.length - 1 || isHeader} aria-label={`Move ${friendlyName} down`}><ChevronDown size={14} /></button>
+                              {!isHeader && <button onClick={() => updateSection(section.id, { visible: !section.visible })} aria-label={`${section.visible ? "Hide" : "Show"} ${friendlyName}`}>{section.visible ? <Eye size={14} /> : <EyeOff size={14} />}</button>}
+                              {!isHeader && <button onClick={() => duplicateSection(section.id)} aria-label={`Duplicate ${friendlyName}`}><Copy size={14} /></button>}
+                              {!isHeader && <button className="section-remove" onClick={() => removeSection(section.id)} aria-label={`Delete ${friendlyName}`}><Trash2 size={14} /></button>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <button className="add-section-button" onClick={() => setAddingSection(!addingSection)}>
+                      <Plus size={14} /> Add a section
+                    </button>
+                    {addingSection && (
+                      <div className="section-picker">
+                        <strong>What would you like to add?</strong>
+                        {sectionOptions.map((option) => (
+                          <button key={option.type} onClick={() => addSection(option)}>
+                            <span>{option.label}</span>
+                            <small>{option.description}</small>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </>

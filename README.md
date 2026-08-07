@@ -49,7 +49,7 @@ Status definitions:
 #### Milestone 2 — Complete website builder
 
 - [ ] Render every required page and section type
-- [ ] Add section reorder, duplicate, visibility, and deletion controls
+- [x] Add section reorder, duplicate, visibility, and deletion controls
 - [ ] Add navigation and footer editors
 - [ ] Add full collection editors
 - [ ] Add media library and image editing guidance
@@ -108,6 +108,8 @@ Status definitions:
 - Individual page creation from 13 page types
 - One-click complete-site structure with the required essential pages
 - Editable page name, URL slug, heading, and introductory text
+- Plain-language page-section picker with immediate live preview
+- Protected page header plus reorder, hide/show, duplicate, and delete controls for content sections
 - Full-template design layer with freely positioned text and shapes
 - On-canvas text boxes with direct text editing and graphical drag placement
 - Direct corner-resize handles for text and shapes without entering position or size numbers

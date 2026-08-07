@@ -74,6 +74,43 @@ export interface EventItem {
   registrationOpen: boolean;
 }
 
+export interface TestimonialItem {
+  id: string;
+  quote: string;
+  name: string;
+  role: string;
+}
+
+export interface FAQItem {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+export interface GalleryItem {
+  id: string;
+  title: string;
+  imageUrl: string;
+  altText: string;
+}
+
+export interface PostItem {
+  id: string;
+  title: string;
+  excerpt: string;
+  author: string;
+  publishedDate: string;
+  imageUrl: string;
+}
+
+export interface MediaItem {
+  id: string;
+  name: string;
+  url: string;
+  altText: string;
+  usage: string;
+}
+
 export interface SermonItem {
   id: string;
   title: string;
@@ -97,7 +134,7 @@ export interface ThemeTokens {
 
 export interface PageSection {
   id: string;
-  type: 'hero' | 'hours_times' | 'announcements' | 'services_products' | 'events' | 'sermons' | 'staff' | 'give_donate' | 'booking' | 'contact_form';
+  type: 'hero' | 'hours_times' | 'announcements' | 'services_products' | 'events' | 'sermons' | 'staff' | 'testimonials' | 'gallery' | 'posts' | 'faq' | 'give_donate' | 'booking' | 'contact_form';
   title: string;
   subtitle?: string;
   visible: boolean;
@@ -109,6 +146,10 @@ export interface Page {
   slug: string;
   seoTitle: string;
   seoDescription: string;
+  socialTitle?: string;
+  socialDescription?: string;
+  socialImageUrl?: string;
+  hideFromSearch?: boolean;
   sections: PageSection[];
 }
 
@@ -163,6 +204,11 @@ export interface SiteData {
   services: ServiceOrProduct[];
   events: EventItem[];
   sermons: SermonItem[];
+  testimonials?: TestimonialItem[];
+  faqs?: FAQItem[];
+  gallery?: GalleryItem[];
+  posts?: PostItem[];
+  media?: MediaItem[];
   
   // Pages
   pages: Page[];

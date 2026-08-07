@@ -8,7 +8,7 @@ This repository is a functional front-end MVP. The interface and local browser w
 
 ### Tracking dashboard
 
-Last updated: **August 6, 2026**
+Last updated: **August 7, 2026**
 
 Status definitions:
 
@@ -19,10 +19,10 @@ Status definitions:
 | Workstream | Status | Current result | Next milestone |
 | --- | --- | --- | --- |
 | Marketing website | ✅ Done | Responsive product site and workspace entry | Connect real accounts and onboarding |
-| Starter templates | ✅ Done | Five industry-specific template foundations | Complete every page renderer per template |
-| Website page builder | 🟡 In progress | Add pages and edit basic page details | Section management and full content fields |
-| Easy Edit | 🟡 In progress | Protected editing for common content | Complete collection and media editors |
-| Responsive preview | 🟡 In progress | Desktop and 390px phone preview | Verify all six required breakpoints |
+| Starter templates | ✅ Done | Five industry-specific kits with complete page and section coverage | Expand template-specific visual variants |
+| Website page builder | ✅ Done | Pages, sections, menus, content, media, design, SEO, and sharing controls | Durable server-side drafts and revisions |
+| Easy Edit | ✅ Done | Protected common-content and collection editing | Add production roles and permissions |
+| Responsive preview | ✅ Done | Desktop and phone previews verified at all six required widths | Add automated visual regression tests |
 | Publishing | 🟡 In progress | Browser-state review and publish flow | Real builds, hosting, releases, and rollback |
 | Commerce and giving | 🟡 In progress | Interactive front-end demonstrations | Payments, orders, receipts, and reporting |
 | Appointments and events | 🟡 In progress | Interactive front-end demonstrations | Calendar, registration, capacity, and messages |
@@ -48,14 +48,14 @@ Status definitions:
 
 #### Milestone 2 — Complete website builder
 
-- [ ] Render every required page and section type
+- [x] Render every required page and section type
 - [x] Add section reorder, duplicate, visibility, and deletion controls
 - [x] Add navigation and footer editors
-- [ ] Add full collection editors
-- [ ] Add media library and image editing guidance
-- [ ] Complete SEO and social-sharing controls
-- [ ] Verify 1440, 1280, 1024, 768, 390, and 360px layouts
-- [ ] Complete WCAG 2.2 Level AA audit
+- [x] Add full collection editors
+- [x] Add media library and image editing guidance
+- [x] Complete SEO and social-sharing controls
+- [x] Verify 1440, 1280, 1024, 768, 390, and 360px layouts
+- [x] Complete WCAG 2.2 Level AA audit ([results](ACCESSIBILITY.md))
 
 #### Milestone 3 — Production platform
 
@@ -105,13 +105,17 @@ Status definitions:
 - Editable primary, accent, background, and text colors
 - Desktop and 390px phone previews
 - Live page-specific preview
-- Individual page creation from 13 page types
+- Individual page creation for all 19 required general and detail page types
 - One-click complete-site structure with the required essential pages
 - Editable page name, URL slug, heading, and introductory text
 - Plain-language page-section picker with immediate live preview
 - Protected page header plus reorder, hide/show, duplicate, and delete controls for content sections
 - Guided header-menu editor with link renaming, reordering, visibility controls, and protected Home access
 - Editable footer description, call-to-action text, and contact-information visibility
+- Collection editors for services, team members, events, testimonials, FAQs, galleries, and blog posts
+- Media library with image previews, accessibility descriptions, intended-use tracking, and sizing guidance
+- Per-page search titles, descriptions, social-sharing copy and image, visibility control, and live search preview
+- Verified responsive builder access without horizontal overflow at every required breakpoint
 - Full-template design layer with freely positioned text and shapes
 - On-canvas text boxes with direct text editing and graphical drag placement
 - Direct corner-resize handles for text and shapes without entering position or size numbers

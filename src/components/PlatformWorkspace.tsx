@@ -12,6 +12,7 @@ import {
   ChevronDown,
   ChevronUp,
   Copy,
+  Database,
   Eye,
   EyeOff,
   HelpCircle,
@@ -47,6 +48,7 @@ import {
   X,
 } from "lucide-react";
 import { getSiteDataForTheme } from "../data/themeDataFactory";
+import { CollectionEditor } from "./CollectionEditor";
 import { THEME_MANIFESTS } from "../data/themesManifest";
 import {
   CanvasElement,
@@ -748,6 +750,10 @@ function SiteMiniPreview({
     events: "Upcoming events",
     sermons: "Resources",
     staff: "Meet the team",
+    testimonials: "What people say",
+    gallery: "Gallery",
+    posts: "Latest news",
+    faq: "Common questions",
     give_donate: "Support our work",
     booking: "Book with us",
     contact_form: "Get in touch",
@@ -820,7 +826,7 @@ function SiteMiniPreview({
             <span className="mini-mobile-menu">Menu · {navigationItems.length}</span>
             <button>{footer.ctaLabel}</button>
           </header>
-          <main>
+          <div className="mini-page-content">
             <span>{page?.title || "Home"}</span>
             <h2>{title}</h2>
             <p>{subtitle}</p>
@@ -899,7 +905,7 @@ function SiteMiniPreview({
                 ))}
               </div>
             )}
-          </main>
+          </div>
           <footer>
             <div>
               <strong>{site.orgName}</strong>
@@ -926,7 +932,7 @@ function WebsiteEditor({
   site: SiteData;
   setSite: (site: SiteData) => void;
 }) {
-  const [panel, setPanel] = useState<"pages" | "design" | "menus">("pages");
+  const [panel, setPanel] = useState<"pages" | "content" | "design" | "menus" | "seo">("pages");
   const [viewport, setViewport] = useState<ViewportMode>("desktop");
   const [activePageId, setActivePageId] = useState(site.pages[0]?.id || "");
   const [addingPage, setAddingPage] = useState(false);
@@ -949,14 +955,19 @@ function WebsiteEditor({
   const pageOptions = [
     "About",
     "Services",
+    "Service Detail",
     "Events",
+    "Event Detail",
     "Team",
     "Testimonials",
     "Gallery",
     "Blog",
+    "Article Detail",
     "Contact",
     "FAQ",
     "Donation",
+    "Booking",
+    "Checkout",
     "Privacy Policy",
     "Terms",
     "404",
@@ -971,6 +982,10 @@ function WebsiteEditor({
     { type: "hours_times", label: "Hours or times", description: "Share when you are available" },
     { type: "events", label: "Events", description: "Promote upcoming dates" },
     { type: "staff", label: "Team or leadership", description: "Introduce your people" },
+    { type: "testimonials", label: "Testimonials", description: "Share what people say" },
+    { type: "gallery", label: "Gallery", description: "Show a collection of images" },
+    { type: "posts", label: "Blog or news", description: "Share recent articles" },
+    { type: "faq", label: "Frequently asked questions", description: "Answer common questions" },
     { type: "sermons", label: "Messages or resources", description: "Share videos, audio, or articles" },
     { type: "give_donate", label: "Donate or give", description: "Add a giving invitation" },
     { type: "booking", label: "Book an appointment", description: "Invite visitors to schedule" },
@@ -983,9 +998,18 @@ function WebsiteEditor({
         : `/${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
     const sectionMap: Record<string, PageSection["type"]> = {
       Services: "services_products",
+      "Service Detail": "services_products",
       Events: "events",
+      "Event Detail": "events",
       Team: "staff",
+      Testimonials: "testimonials",
+      Gallery: "gallery",
+      Blog: "posts",
+      "Article Detail": "posts",
+      FAQ: "faq",
       Donation: "give_donate",
+      Booking: "booking",
+      Checkout: "give_donate",
       Contact: "contact_form",
     };
     return {
@@ -1207,6 +1231,13 @@ function WebsiteEditor({
               Pages
             </button>
             <button
+              className={panel === "content" ? "active" : ""}
+              onClick={() => setPanel("content")}
+            >
+              <Database size={16} />
+              Content
+            </button>
+            <button
               className={panel === "design" ? "active" : ""}
               onClick={() => setPanel("design")}
             >
@@ -1219,6 +1250,13 @@ function WebsiteEditor({
             >
               <Menu size={16} />
               Menus
+            </button>
+            <button
+              className={panel === "seo" ? "active" : ""}
+              onClick={() => setPanel("seo")}
+            >
+              <Search size={16} />
+              Sharing
             </button>
           </div>
           {panel === "pages" ? (
@@ -1361,6 +1399,8 @@ function WebsiteEditor({
                 </div>
               )}
             </>
+          ) : panel === "content" ? (
+            <CollectionEditor site={site} setSite={setSite} />
           ) : panel === "design" ? (
             <>
               <div className="template-list">
@@ -1430,7 +1470,7 @@ function WebsiteEditor({
                 ))}
               </div>
             </>
-          ) : (
+          ) : panel === "menus" ? (
             <div className="menu-editor">
               <div className="menu-editor-heading">
                 <span>Header menu</span>
@@ -1476,6 +1516,20 @@ function WebsiteEditor({
                   <span><strong>Show contact information</strong><small>Uses the phone and email from Easy Edit.</small></span>
                 </label>
               </div>
+            </div>
+          ) : (
+            <div className="seo-editor">
+              <div className="menu-editor-heading">
+                <span>Search & sharing</span>
+                <p>Control how this page appears in search results and when people share it.</p>
+              </div>
+              <label>Search result title<input value={activePage?.seoTitle || ""} maxLength={60} onChange={(event) => updatePage({ seoTitle: event.target.value })} /><small>{activePage?.seoTitle.length || 0}/60 characters</small></label>
+              <label>Search result description<textarea value={activePage?.seoDescription || ""} maxLength={160} onChange={(event) => updatePage({ seoDescription: event.target.value })} /><small>{activePage?.seoDescription.length || 0}/160 characters</small></label>
+              <label>Social post title<input value={activePage?.socialTitle || activePage?.seoTitle || ""} maxLength={70} onChange={(event) => updatePage({ socialTitle: event.target.value })} /></label>
+              <label>Social post description<textarea value={activePage?.socialDescription || activePage?.seoDescription || ""} maxLength={160} onChange={(event) => updatePage({ socialDescription: event.target.value })} /></label>
+              <label>Social image link<input value={activePage?.socialImageUrl || ""} placeholder="https://…" onChange={(event) => updatePage({ socialImageUrl: event.target.value })} /><small>Recommended: 1200 × 630 pixels</small></label>
+              <label className="contact-toggle"><input type="checkbox" checked={Boolean(activePage?.hideFromSearch)} onChange={(event) => updatePage({ hideFromSearch: event.target.checked })} /><span><strong>Hide this page from search results</strong><small>Useful for checkout, thank-you, and private campaign pages.</small></span></label>
+              <div className="search-preview"><small>SEARCH PREVIEW</small><strong>{activePage?.seoTitle || activePage?.title}</strong><span>{site.customDomain}{activePage?.slug}</span><p>{activePage?.seoDescription}</p></div>
             </div>
           )}
         </aside>

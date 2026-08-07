@@ -112,6 +112,20 @@ export interface Page {
   sections: PageSection[];
 }
 
+export interface CanvasElement {
+  id: string;
+  pageId: string;
+  kind: 'text' | 'rectangle' | 'circle' | 'line';
+  text: string;
+  width: number;
+  height: number;
+  color: string;
+  fontSize: number;
+  bold: boolean;
+  italic: boolean;
+  align: 'left' | 'center' | 'right';
+}
+
 export interface SiteData {
   id: string;
   orgName: string;
@@ -137,6 +151,7 @@ export interface SiteData {
   
   // Pages
   pages: Page[];
+  canvasElements?: CanvasElement[];
 }
 
 export interface Revision {

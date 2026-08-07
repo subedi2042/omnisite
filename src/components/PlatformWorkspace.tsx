@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import {
   Activity, ArrowLeft, ArrowRight, CalendarDays, Check, ChevronDown,
   HelpCircle, Clock3, FileText, Globe2, HandHeart, LayoutDashboard,
   DollarSign, Menu, MessageSquareText, Monitor, MoreHorizontal, PackageCheck,
   Paintbrush, PanelLeftClose, Plus, Rocket, Search, Settings, ShieldCheck,
-  ShoppingBag, Sparkles, Users, X
+  ShoppingBag, Smartphone, Sparkles, Users, X
 } from 'lucide-react';
 import { getSiteDataForTheme } from '../data/themeDataFactory';
-import { SiteData } from '../types/platform';
+import { THEME_MANIFESTS } from '../data/themesManifest';
+import { Page, PageSection, SiteData, ThemePresetID, ViewportMode } from '../types/platform';
 
 type WorkspaceView = 'home' | 'easy' | 'advanced' | 'project' | 'analytics' | 'settings' | 'sell' | 'appointments' | 'events' | 'giving' | 'people';
 type EasyTask = 'identity' | 'hours' | 'announcement' | 'contact';
@@ -144,12 +145,44 @@ function FormField({ label, value, onChange, multiline, limit }: { label: string
   return <label className="easy-field"><span>{label}{limit && <small>{limit}</small>}</span>{multiline ? <textarea value={value} onChange={event => onChange(event.target.value)} /> : <input value={value} onChange={event => onChange(event.target.value)} />}</label>;
 }
 
-function SiteMiniPreview({ site }: { site: SiteData }) {
-  return <aside className="site-mini-preview"><div className="mini-preview-bar"><span><i /><i /><i /></span><strong>Desktop preview</strong><button><MoreHorizontal size={16} /></button></div><div className="mini-site"><header><b>{site.orgName}</b><nav>About&nbsp;&nbsp; Ministries&nbsp;&nbsp; Contact</nav><button>Plan a visit</button></header><main><span>Welcome to our community</span><h2>{site.tagline || 'A place to belong.'}</h2><p>Come as you are. There is a place for you here.</p><button>Plan your visit</button><section><small>THIS WEEK</small><h3>{site.hours[0]?.label}</h3><p>{site.hours[0]?.days}</p></section></main></div></aside>;
+function SiteMiniPreview({ site, viewport = 'desktop', page = site.pages[0] }: { site: SiteData; viewport?: ViewportMode; page?: Page }) {
+  const hero = page?.sections.find(section => section.type === 'hero');
+  const title = hero?.title || page?.title || site.tagline || 'A place to belong.';
+  const subtitle = hero?.subtitle || (page?.title === 'Home' ? 'Come as you are. There is a place for you here.' : `Learn more about ${page?.title.toLowerCase() || 'our organization'}.`);
+  return <aside className={`site-mini-preview viewport-${viewport}`}><div className="mini-preview-bar"><span><i /><i /><i /></span><strong>{viewport === 'mobile' ? 'Phone' : viewport === 'tablet' ? 'Tablet' : 'Desktop'} preview</strong><button aria-label="Preview options"><MoreHorizontal size={16} /></button></div><div className="mini-device"><div className="mini-site" style={{ '--site-primary': site.theme.primaryColor, '--site-accent': site.theme.accentColor, '--site-bg': site.theme.backgroundColor, '--site-text': site.theme.textColor } as CSSProperties}><header><b>{site.orgName}</b><nav>{site.pages.slice(0, 4).map(item => <span key={item.id}>{item.title}</span>)}</nav><button>Get started</button></header><main><span>{page?.title || 'Home'}</span><h2>{title}</h2><p>{subtitle}</p><button>Get started</button>{page?.sections.some(section => section.type === 'hours_times') && <section><small>THIS WEEK</small><h3>{site.hours[0]?.label}</h3><p>{site.hours[0]?.days}</p></section>}{page?.title !== 'Home' && <div className="mini-content-blocks"><i /><i /><i /></div>}</main></div></div></aside>;
 }
 
 function WebsiteEditor({ site, setSite }: { site: SiteData; setSite: (site: SiteData) => void }) {
-  return <main className="platform-page editor-page"><div className="platform-page-heading"><div><span>Website</span><h1>Structure and design.</h1><p>Advanced controls are separate from routine customer updates.</p></div><div className="platform-saved"><Check size={15} />Draft saved</div></div><div className="advanced-layout"><aside className="advanced-panel"><div className="advanced-tabs"><button className="active"><FileText size={16} />Pages</button><button><Paintbrush size={16} />Design</button></div><button className="advanced-add">+ Add page</button>{site.pages.map((page, index) => <button className={index === 0 ? 'advanced-page active' : 'advanced-page'} key={page.id}><span><strong>{page.title}</strong><small>/{page.slug}</small></span><MoreHorizontal size={16} /></button>)}<div className="advanced-theme"><span>Theme</span><strong>Faith Community</strong><div><i style={{ background: site.theme.primaryColor }} /><i style={{ background: site.theme.accentColor }} /><i style={{ background: site.theme.backgroundColor }} /></div><label>Accent color<input type="color" value={site.theme.accentColor} onChange={event => setSite({ ...site, theme: { ...site.theme, accentColor: event.target.value } })} /></label></div></aside><div className="advanced-canvas"><div className="advanced-canvas-tools"><button><Monitor size={16} />Desktop</button><span>Home page · Draft</span><button><PanelLeftClose size={16} />Hide controls</button></div><SiteMiniPreview site={site} /></div></div></main>;
+  const [panel, setPanel] = useState<'pages' | 'design'>('pages');
+  const [viewport, setViewport] = useState<ViewportMode>('desktop');
+  const [activePageId, setActivePageId] = useState(site.pages[0]?.id || '');
+  const [addingPage, setAddingPage] = useState(false);
+  const activePage = site.pages.find(page => page.id === activePageId) || site.pages[0];
+
+  const pageOptions = ['About', 'Services', 'Events', 'Team', 'Testimonials', 'Gallery', 'Blog', 'Contact', 'FAQ', 'Donation', 'Privacy Policy', 'Terms', '404'];
+  const makePage = (title: string): Page => {
+    const slug = title === '404' ? '/404' : `/${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+    const sectionMap: Record<string, PageSection['type']> = { Services: 'services_products', Events: 'events', Team: 'staff', Donation: 'give_donate', Contact: 'contact_form' };
+    return { id: `page-${Date.now()}-${title}`, title, slug, seoTitle: `${title} | ${site.orgName}`, seoDescription: `${title} information for ${site.orgName}.`, sections: [{ id: `hero-${Date.now()}-${title}`, type: 'hero', title: title === '404' ? 'Page not found' : title, subtitle: `Explore ${title.toLowerCase()} at ${site.orgName}.`, visible: true }, ...(sectionMap[title] ? [{ id: `content-${Date.now()}-${title}`, type: sectionMap[title], title, visible: true } as PageSection] : [])] };
+  };
+  const addPage = (title: string) => {
+    const existing = site.pages.find(page => page.title === title);
+    if (existing) { setActivePageId(existing.id); setAddingPage(false); return; }
+    const page = makePage(title);
+    setSite({ ...site, pages: [...site.pages, page] });
+    setActivePageId(page.id);
+    setAddingPage(false);
+  };
+  const completeSite = () => {
+    const missing = pageOptions.filter(title => !site.pages.some(page => page.title === title)).map(makePage);
+    setSite({ ...site, pages: [...site.pages, ...missing] });
+  };
+  const applyTheme = (themeId: ThemePresetID) => {
+    const preset = getSiteDataForTheme(themeId);
+    setSite({ ...site, theme: { ...preset.theme } });
+  };
+
+  return <main className="platform-page editor-page"><div className="platform-page-heading"><div><span>Website</span><h1>Design the complete site.</h1><p>Choose a template, add pages, and verify every layout on desktop or phone. All builder features in this workspace are free.</p></div><div className="platform-saved"><Check size={15} />Draft saved</div></div><div className="advanced-layout"><aside className="advanced-panel"><div className="advanced-tabs"><button className={panel === 'pages' ? 'active' : ''} onClick={() => setPanel('pages')}><FileText size={16} />Pages</button><button className={panel === 'design' ? 'active' : ''} onClick={() => setPanel('design')}><Paintbrush size={16} />Design</button></div>{panel === 'pages' ? <><button className="advanced-add" onClick={() => setAddingPage(!addingPage)}><Plus size={14} /> Add page</button>{addingPage && <div className="page-template-menu">{pageOptions.map(title => <button key={title} onClick={() => addPage(title)}>{title}</button>)}</div>}<button className="complete-site" onClick={completeSite}><Sparkles size={15} /><span><strong>Complete my website</strong><small>Add every essential page free</small></span></button><div className="advanced-page-list">{site.pages.map(page => <button className={page.id === activePage?.id ? 'advanced-page active' : 'advanced-page'} onClick={() => setActivePageId(page.id)} key={page.id}><span><strong>{page.title}</strong><small>{page.slug}</small></span><MoreHorizontal size={16} /></button>)}</div></> : <><div className="template-list"><span>Starter templates</span>{(['sanctuary_modern','local_authority','local_table','trusted_home_pro','modern_merchant'] as ThemePresetID[]).map(id => { const theme = THEME_MANIFESTS.find(item => item.id === id)!; return <button key={id} className={site.theme.themePreset === id ? 'active' : ''} onClick={() => applyTheme(id)}><i style={{ background: theme.colors.primary }} /><span><strong>{theme.name}</strong><small>{theme.industry}</small></span>{site.theme.themePreset === id && <Check size={15} />}</button>; })}</div><div className="advanced-theme"><span>Brand colors</span><div><i style={{ background: site.theme.primaryColor }} /><i style={{ background: site.theme.accentColor }} /><i style={{ background: site.theme.backgroundColor }} /></div><label>Accent color<input type="color" value={site.theme.accentColor} onChange={event => setSite({ ...site, theme: { ...site.theme, accentColor: event.target.value } })} /></label></div></>}</aside><div className="advanced-canvas"><div className="advanced-canvas-tools"><div className="viewport-switcher"><button className={viewport === 'desktop' ? 'active' : ''} onClick={() => setViewport('desktop')}><Monitor size={16} /><span>Desktop</span></button><button className={viewport === 'mobile' ? 'active' : ''} onClick={() => setViewport('mobile')}><Smartphone size={16} /><span>Phone</span></button></div><span>{activePage?.title || 'Home'} · Draft</span><button><PanelLeftClose size={16} />Hide controls</button></div><SiteMiniPreview site={site} viewport={viewport} page={activePage} /></div></div></main>;
 }
 
 function ProjectWorkspace() { return <main className="platform-page"><div className="platform-page-heading"><div><span>Managed service</span><h1>Your website project.</h1><p>Review progress, provide feedback, and keep ownership clear.</p></div><button className="heading-action">Share review link</button></div><div className="project-grid"><section className="platform-card"><div className="platform-card-heading"><div><span>Project plan</span><h2>Launch milestones</h2></div><strong>3 of 5</strong></div>{[['Intake and assets', 'Complete'], ['Theme and first draft', 'Complete'], ['Your review and feedback', 'In review'], ['Domain and launch checks', 'Next'], ['Easy Edit handoff', 'Upcoming']].map(([title, status], index) => <div className="project-step" key={title}><span className={index < 2 ? 'done' : index === 2 ? 'current' : ''}>{index < 2 ? <Check size={14} /> : index + 1}</span><div><strong>{title}</strong><small>{status}</small></div>{index === 2 && <button>Open review</button>}</div>)}</section><section className="platform-card"><div className="platform-card-heading"><div><span>Review thread</span><h2>2 open comments</h2></div></div><div className="review-message"><strong>OmniSite design team <small>Yesterday</small></strong><p>The homepage direction is ready. Please check the service times and contact information.</p></div><div className="review-message client"><strong>You <small>Today</small></strong><p>The theme looks right. Please keep all customer tools this clean and light.</p></div><textarea placeholder="Add a comment for the project team" /><button className="heading-action">Send comment</button></section></div></main>; }

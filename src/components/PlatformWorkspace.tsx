@@ -22,6 +22,7 @@ import {
   HandHeart,
   LayoutDashboard,
   Circle,
+  CreditCard,
   DollarSign,
   Italic,
   Menu,
@@ -35,13 +36,16 @@ import {
   PanelLeftClose,
   Plus,
   Rocket,
+  RotateCcw,
   Search,
   Settings,
   ShieldCheck,
   ShoppingBag,
+  ShoppingCart,
   Smartphone,
   Sparkles,
   Square,
+  Store,
   Trash2,
   Type,
   Users,
@@ -1828,136 +1832,128 @@ function MetricCards({ items }: { items: Array<[string, string, string]> }) {
   );
 }
 
+type SalesProduct = {
+  id: number;
+  sku: string;
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  compareAtPrice: number;
+  cost: number;
+  stock: number;
+  lowStockAt: number;
+  status: "Active" | "Draft";
+};
+
+type SalesOrder = {
+  id: string;
+  customer: string;
+  email: string;
+  total: number;
+  items: number;
+  status: "New" | "Fulfilled";
+  createdAt: string;
+};
+
+const salesFixtures: SalesProduct[] = [
+  { id: 101, sku: "TEE-NAV-M", name: "Everyday Logo T-shirt", description: "Soft heavyweight cotton shirt in navy.", category: "Apparel", price: 28, compareAtPrice: 34, cost: 11.5, stock: 42, lowStockAt: 10, status: "Active" },
+  { id: 102, sku: "TOTE-NAT", name: "Canvas Market Tote", description: "Reusable natural canvas carryall.", category: "Accessories", price: 18, compareAtPrice: 0, cost: 6.25, stock: 8, lowStockAt: 10, status: "Active" },
+  { id: 103, sku: "GUIDE-DIG", name: "Digital Welcome Guide", description: "Downloadable getting-started guide.", category: "Digital", price: 9, compareAtPrice: 0, cost: 0, stock: 999, lowStockAt: 0, status: "Active" },
+  { id: 104, sku: "MUG-CRM", name: "Ceramic Studio Mug", description: "Twelve-ounce cream ceramic mug.", category: "Home", price: 22, compareAtPrice: 26, cost: 7.8, stock: 3, lowStockAt: 6, status: "Active" },
+  { id: 105, sku: "WORKSHOP-01", name: "Small Business Workshop", description: "One-seat registration for the local workshop.", category: "Events", price: 45, compareAtPrice: 0, cost: 12, stock: 24, lowStockAt: 5, status: "Draft" },
+];
+
+const orderFixtures: SalesOrder[] = [
+  { id: "ORD-1042", customer: "Jordan Lee", email: "jordan@example.com", total: 46, items: 2, status: "New", createdAt: "Today, 9:14 AM" },
+  { id: "ORD-1041", customer: "Avery Martin", email: "avery@example.com", total: 28, items: 1, status: "Fulfilled", createdAt: "Yesterday" },
+];
+
 function SellWorkspace() {
-  const [showForm, setShowForm] = useState(false);
-  const [products, setProducts] = usePersistentState("omnisite-products", [
-    {
-      id: 1,
-      name: "Community T-shirt",
-      price: 24,
-      stock: 38,
-      status: "Active",
-    },
-    { id: 2, name: "Welcome guide", price: 8, stock: 112, status: "Active" },
-    {
-      id: 3,
-      name: "Event registration",
-      price: 15,
-      stock: 24,
-      status: "Draft",
-    },
-  ]);
-  const [name, setName] = useState("");
-  const [price, setPrice] = useState("");
-  const addProduct = () => {
-    if (!name.trim() || !price) return;
-    setProducts([
-      ...products,
-      {
-        id: Date.now(),
-        name: name.trim(),
-        price: Number(price),
-        stock: 0,
-        status: "Draft",
-      },
-    ]);
-    setName("");
-    setPrice("");
-    setShowForm(false);
+  const [perspective, setPerspective] = useState<"seller" | "customer">("seller");
+  const [sellerView, setSellerView] = useState<"inventory" | "orders">("inventory");
+  const [products, setProducts] = usePersistentState<SalesProduct[]>("omnisite-sales-products-v2", salesFixtures);
+  const [orders, setOrders] = usePersistentState<SalesOrder[]>("omnisite-sales-orders-v2", orderFixtures);
+  const [cart, setCart] = useState<Record<number, number>>({});
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [orderComplete, setOrderComplete] = useState<string | null>(null);
+
+  const activeProducts = products.filter((product) => product.status === "Active");
+  const cartItems = activeProducts.filter((product) => cart[product.id]);
+  const cartCount = Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);
+  const subtotal = cartItems.reduce((sum, product) => sum + product.price * cart[product.id], 0);
+  const tax = subtotal * 0.0825;
+  const total = subtotal + tax;
+  const totalInventory = products.reduce((sum, product) => sum + product.stock, 0);
+  const lowStock = products.filter((product) => product.status === "Active" && product.lowStockAt > 0 && product.stock <= product.lowStockAt).length;
+
+  const updateProduct = (id: number, changes: Partial<SalesProduct>) =>
+    setProducts(products.map((product) => product.id === id ? { ...product, ...changes } : product));
+
+  const addToCart = (product: SalesProduct) => {
+    const current = cart[product.id] || 0;
+    if (current >= product.stock) return;
+    setCart({ ...cart, [product.id]: current + 1 });
+    setOrderComplete(null);
   };
+
+  const placeTestOrder = () => {
+    if (!customerName.trim() || !customerEmail.includes("@") || cartCount === 0) return;
+    const orderId = `TEST-${String(Date.now()).slice(-6)}`;
+    setOrders([{ id: orderId, customer: customerName.trim(), email: customerEmail.trim(), total, items: cartCount, status: "New", createdAt: "Just now" }, ...orders]);
+    setProducts(products.map((product) => ({ ...product, stock: Math.max(0, product.stock - (cart[product.id] || 0)) })));
+    setCart({});
+    setCheckoutOpen(false);
+    setOrderComplete(orderId);
+    setCustomerName("");
+    setCustomerEmail("");
+  };
+
+  const resetTestData = () => {
+    setProducts(salesFixtures);
+    setOrders(orderFixtures);
+    setCart({});
+    setOrderComplete(null);
+    setCheckoutOpen(false);
+  };
+
   return (
-    <main className="platform-page">
-      <ModuleHeader
-        eyebrow="Commerce preview"
-        title="Products and orders."
-        description="A focused small-store workspace with clear inventory and order states."
-        action="Add product"
-        onAction={() => setShowForm(!showForm)}
-      />
-      <div className="module-notice">
-        <ShieldCheck size={18} />
-        <div>
-          <strong>Payment connection required before launch</strong>
-          <span>
-            This preview does not collect card data. Production checkout will
-            use a processor-hosted secure component.
-          </span>
-        </div>
+    <main className="platform-page sales-workspace">
+      <div className="platform-page-heading module-heading">
+        <div><span>Local commerce testing</span><h1>Sales workflow lab.</h1><p>Test the same inventory and order flow from the business and customer perspectives.</p></div>
+        <button onClick={resetTestData}><RotateCcw size={16} /> Reset test data</button>
       </div>
-      {showForm && (
-        <section className="platform-card module-create">
-          <div>
-            <span className="platform-kicker">New product</span>
-            <h2>Add a catalog item</h2>
-          </div>
-          <label>
-            Name
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Product or service name"
-            />
-          </label>
-          <label>
-            Price
-            <input
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              type="number"
-              min="0"
-              placeholder="0.00"
-            />
-          </label>
-          <button onClick={addProduct}>Save draft product</button>
-        </section>
-      )}
-      <MetricCards
-        items={[
-          ["Gross sales", "$1,842", "+12% this month"],
-          ["Orders", "46", "5 need attention"],
-          [
-            "Products",
-            String(products.length),
-            `${products.filter((p) => p.status === "Active").length} active`,
-          ],
-          ["Inventory", "174", "2 low-stock items"],
-        ]}
-      />
-      <section className="platform-card module-table-card">
-        <div className="platform-card-heading">
-          <div>
-            <span>Catalog</span>
-            <h2>Products</h2>
-          </div>
-          <button>Manage inventory</button>
-        </div>
-        <div className="module-table">
-          <div className="module-table-head">
-            <span>Product</span>
-            <span>Price</span>
-            <span>Inventory</span>
-            <span>Status</span>
-            <span />
-          </div>
-          {products.map((product) => (
-            <div key={product.id}>
-              <span>
-                <PackageCheck size={18} />
-                <strong>{product.name}</strong>
-              </span>
-              <span>${product.price.toFixed(2)}</span>
-              <span>{product.stock || "Not tracked"}</span>
-              <span>
-                <i className={product.status.toLowerCase()} />
-                {product.status}
-              </span>
-              <button aria-label={`More options for ${product.name}`}>
-                <MoreHorizontal size={17} />
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
+      <div className="sales-perspective" aria-label="Choose testing perspective">
+        <button className={perspective === "seller" ? "active" : ""} onClick={() => setPerspective("seller")}><Store size={17} /><span><strong>Seller view</strong><small>Inventory and orders</small></span></button>
+        <button className={perspective === "customer" ? "active" : ""} onClick={() => setPerspective("customer")}><ShoppingCart size={17} /><span><strong>Customer view</strong><small>Storefront and checkout</small></span></button>
+      </div>
+      <div className="module-notice"><ShieldCheck size={18} /><div><strong>Safe local test mode</strong><span>No card information is requested or transmitted. Checkout creates a local test order and updates local inventory only.</span></div></div>
+
+      {perspective === "seller" ? <>
+        <MetricCards items={[["Test revenue", `$${orders.reduce((sum, order) => sum + order.total, 0).toFixed(2)}`, `${orders.length} orders`],["Available units", String(totalInventory), `${lowStock} low-stock products`],["Active products", String(activeProducts.length), `${products.length - activeProducts.length} draft`],["New orders", String(orders.filter((order) => order.status === "New").length), "Ready for review"]]} />
+        <div className="sales-subnav"><button className={sellerView === "inventory" ? "active" : ""} onClick={() => setSellerView("inventory")}>Inventory & pricing</button><button className={sellerView === "orders" ? "active" : ""} onClick={() => setSellerView("orders")}>Orders</button></div>
+        {sellerView === "inventory" ? <section className="platform-card sales-inventory">
+          <div className="platform-card-heading"><div><span>Shared test catalog</span><h2>Inventory and prices</h2></div><small>Changes appear in Customer view immediately.</small></div>
+          <div className="sales-inventory-head"><span>Product</span><span>Price</span><span>Stock</span><span>Availability</span></div>
+          {products.map((product) => <article key={product.id}>
+            <div><strong>{product.name}</strong><small>{product.sku} · {product.category}</small><p>{product.description}</p></div>
+            <label><span className="sr-only">Price for {product.name}</span><b>$</b><input aria-label={`Price for ${product.name}`} type="number" min="0" step="0.01" value={product.price} onChange={(event) => updateProduct(product.id, { price: Number(event.target.value) })} /></label>
+            <div className="stock-stepper"><button onClick={() => updateProduct(product.id, { stock: Math.max(0, product.stock - 1) })} aria-label={`Reduce ${product.name} stock`}><Minus size={14} /></button><strong>{product.stock}</strong><button onClick={() => updateProduct(product.id, { stock: product.stock + 1 })} aria-label={`Increase ${product.name} stock`}><Plus size={14} /></button></div>
+            <button className={`availability-toggle ${product.status.toLowerCase()}`} onClick={() => updateProduct(product.id, { status: product.status === "Active" ? "Draft" : "Active" })}>{product.status}</button>
+            {product.lowStockAt > 0 && product.stock <= product.lowStockAt && <span className="low-stock-note">Low stock · alert at {product.lowStockAt}</span>}
+          </article>)}
+        </section> : <section className="platform-card sales-orders">
+          <div className="platform-card-heading"><div><span>Local orders</span><h2>Order queue</h2></div><small>Customer test orders appear here.</small></div>
+          {orders.map((order) => <article key={order.id}><div><strong>{order.id}</strong><small>{order.createdAt}</small></div><div><strong>{order.customer}</strong><small>{order.email}</small></div><div><strong>${order.total.toFixed(2)}</strong><small>{order.items} item{order.items === 1 ? "" : "s"}</small></div><button className={order.status.toLowerCase()} onClick={() => setOrders(orders.map((item) => item.id === order.id ? { ...item, status: item.status === "New" ? "Fulfilled" : "New" } : item))}>{order.status}</button></article>)}
+        </section>}
+      </> : <div className="customer-storefront">
+        <div className="storefront-heading"><div><span>Customer test storefront</span><h2>Everyday Goods</h2><p>Browse the active catalog and place a safe local test order.</p></div><button onClick={() => setCheckoutOpen(true)}><ShoppingCart size={16} /> Cart ({cartCount}) · ${subtotal.toFixed(2)}</button></div>
+        {orderComplete && <div className="order-success"><Check size={18} /><div><strong>Test order placed</strong><span>{orderComplete} is now visible in Seller view.</span></div><button onClick={() => { setPerspective("seller"); setSellerView("orders"); }}>View order</button></div>}
+        <div className="storefront-grid">{activeProducts.map((product) => <article key={product.id}><div className="product-visual"><PackageCheck size={28} /><span>{product.category}</span></div><div><small>{product.sku}</small><h3>{product.name}</h3><p>{product.description}</p><div><strong>${product.price.toFixed(2)}</strong>{product.compareAtPrice > product.price && <del>${product.compareAtPrice.toFixed(2)}</del>}</div><button disabled={product.stock === 0} onClick={() => addToCart(product)}>{product.stock === 0 ? "Sold out" : cart[product.id] ? `Add another · ${cart[product.id]} in cart` : "Add to cart"}</button><small>{product.stock <= product.lowStockAt && product.lowStockAt > 0 ? `Only ${product.stock} left` : "In stock"}</small></div></article>)}</div>
+        {checkoutOpen && <section className="checkout-panel"><div className="checkout-heading"><div><span>Safe checkout test</span><h2>Review your order</h2></div><button onClick={() => setCheckoutOpen(false)} aria-label="Close checkout"><X size={18} /></button></div>{cartItems.length === 0 ? <p>Your cart is empty.</p> : <><div className="checkout-items">{cartItems.map((product) => <div key={product.id}><span>{product.name} × {cart[product.id]}</span><strong>${(product.price * cart[product.id]).toFixed(2)}</strong></div>)}</div><div className="checkout-total"><span>Subtotal <b>${subtotal.toFixed(2)}</b></span><span>Test tax <b>${tax.toFixed(2)}</b></span><strong>Total <b>${total.toFixed(2)}</b></strong></div><label>Name<input value={customerName} onChange={(event) => setCustomerName(event.target.value)} placeholder="Test customer" /></label><label>Email<input value={customerEmail} onChange={(event) => setCustomerEmail(event.target.value)} type="email" placeholder="test@example.com" /></label><div className="test-payment"><CreditCard size={17} /><span><strong>Test payment</strong><small>No card number needed</small></span></div><button className="place-test-order" onClick={placeTestOrder} disabled={!customerName.trim() || !customerEmail.includes("@")}>Place test order · ${total.toFixed(2)}</button></>}</section>}
+      </div>}
     </main>
   );
 }

@@ -24,7 +24,7 @@ Status definitions:
 | Easy Edit | ✅ Done | Protected common-content and collection editing | Add production roles and permissions |
 | Responsive preview | ✅ Done | Desktop and phone previews verified at all six required widths | Add automated visual regression tests |
 | Publishing | 🟡 In progress | Browser-state review and publish flow | Real builds, hosting, releases, and rollback |
-| Commerce and giving | 🟡 In progress | Interactive front-end demonstrations | Payments, orders, receipts, and reporting |
+| Commerce and giving | 🟡 In progress | Seller/customer sales lab with shared local inventory, pricing, cart, checkout, and orders | Production payments, receipts, refunds, and reporting |
 | Appointments and events | 🟡 In progress | Interactive front-end demonstrations | Calendar, registration, capacity, and messages |
 | People and groups | 🟡 In progress | Privacy-oriented interface demonstration | Secure records, consent, permissions, and exports |
 | Authentication and tenancy | ⬜ Not started | No production authentication or tenant database | Accounts, sessions, roles, and tenant isolation |
@@ -147,7 +147,10 @@ Status definitions:
 
 The following modules have interactive front-end workflows and local demo data:
 
-- Products and orders
+- Sales workflow lab with separate seller and customer perspectives
+- Shared local product inventory and editable pricing
+- Customer storefront, cart, tax calculation, and card-free test checkout
+- Local order creation, stock decrementing, fulfillment status, and fixture reset
 - Appointments
 - Events and registrations
 - Giving and funds
@@ -155,6 +158,20 @@ The following modules have interactive front-end workflows and local demo data:
 - Analytics dashboard
 
 These modules are previews only. They do not yet have secure production databases, payment processing, calendar integrations, or server-side permissions.
+
+#### Local sales test inventory
+
+Open **Sell → Seller view** in the workspace to adjust prices, stock, availability, and order status. Switch to **Customer view** to browse the same active catalog, add items to the cart, and place a card-free test order. The new order immediately appears in the seller queue and reduces the shared local inventory. Use **Reset test data** to restore the fixtures below.
+
+| Product | SKU | Test price | Starting stock | Test state |
+| --- | --- | ---: | ---: | --- |
+| Everyday Logo T-shirt | `TEE-NAV-M` | $28.00 | 42 | Active; compare-at price $34.00 |
+| Canvas Market Tote | `TOTE-NAT` | $18.00 | 8 | Active; low-stock alert at 10 |
+| Digital Welcome Guide | `GUIDE-DIG` | $9.00 | 999 | Active digital item |
+| Ceramic Studio Mug | `MUG-CRM` | $22.00 | 3 | Active; compare-at price $26.00; low-stock alert at 6 |
+| Small Business Workshop | `WORKSHOP-01` | $45.00 | 24 | Draft; hidden from customer view |
+
+All sales data stays in the current browser's local storage. Checkout intentionally asks for no card details and does not transmit or process payments.
 
 #### Quality and accessibility foundation
 
@@ -240,7 +257,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open the local URL printed by Vite. For the current workflow-testing session, use `http://localhost:3001/`.
 
 ## Quality checks
 
